@@ -259,6 +259,9 @@ function fmtM(n){ // в млн с 1 знаком
   return (Math.abs(v)>=100 ? v.toFixed(0) : v.toFixed(1)).replace('.', ',');
 }
 function fmtUsdM(n){ return fmtM(n)+' млн $'; }
+function fmtAxis(v){ // подписи делений осей (значения уже в млн/₽/т — без повторного /1e6)
+  return (Number.isInteger(v) || Math.abs(v)>=10) ? String(Math.round(v)) : v.toFixed(1).replace('.', ',');
+}
 function fmtKg(n){ const t=n/1000; return (Math.abs(t)>=1000? (t/1000).toFixed(1).replace('.',',')+' тыс т' : Math.round(t).toLocaleString('ru-RU')+' т'); }
 function pct(x){ return (x*100).toFixed(1).replace('.',',')+'%'; }
 function quantile(sortedArr, q){
@@ -294,7 +297,7 @@ function rect(p,x,y,w,h,fill,o={}){
 // вертикальные столбцы
 function barV(mount, items, o={}){
   mount.innerHTML='';
-  const W=760,H=o.h||300,pad={l:52,r:12,t:14,b:44};
+  const W=760,H=o.h||300,pad={l:52,r:12,t:24,b:44};
   const s=svgEl(W,H); mount.appendChild(s);
   const max = Math.max(1, ...items.map(d=>d.v));
   const nice = niceMax(max);
@@ -304,7 +307,7 @@ function barV(mount, items, o={}){
     const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
     ln.setAttribute('x1',pad.l); ln.setAttribute('x2',W-pad.r); ln.setAttribute('y1',y); ln.setAttribute('y2',y);
     ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
-    txt(s,pad.l-6,y+3.5,fmtM(nice*g/4),{anchor:'end',fs:10.5});
+    txt(s,pad.l-6,y+3.5,o.fmtY? o.fmtY(nice*g/4) : fmtM(nice*g/4),{anchor:'end',fs:10.5});
   }
   items.forEach((d,i)=>{
     const x = pad.l + iw*(i+0.5)/items.length - bw/2;
@@ -336,12 +339,12 @@ function lineChart(mount, series, o={}){
   mount.innerHTML='';
   const W=760,H=o.h||300,pad={l:56,r:14,t:16,b:36};
   const s=svgEl(W,H); mount.appendChild(s);
-  const xs = series.length? series[0].pts.map(p=>p.x):[];
+  const xs = series.length? [...new Set(series.flatMap(se=>se.pts.map(p=>String(p.x))))].sort():[];
   let max=0; series.forEach(se=>se.pts.forEach(p=>{ if(p.y>max) max=p.y; }));
   if(o.max) max=o.max;
   const nice=niceMax(max);
   const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
-  const X = i => pad.l + (xs.length<2? iw/2 : iw*i/(xs.length-1));
+  const X = x => pad.l + (xs.length<2? iw/2 : iw*xs.indexOf(String(x))/(xs.length-1));
   const Y = v => pad.t+ih-ih*v/nice;
   for(let g=0; g<=4; g++){
     const y=pad.t+ih-ih*g/4;
@@ -352,10 +355,10 @@ function lineChart(mount, series, o={}){
   }
   xs.forEach((x,i)=>{
     if(xs.length>14 && i%2) return;
-    txt(s,X(i),H-pad.b+16,String(x),{anchor:'middle',fs:10.5});
+    txt(s,X(x),H-pad.b+16,String(x),{anchor:'middle',fs:10.5});
   });
   series.forEach(se=>{
-    const dd = se.pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join(' ');
+    const dd = se.pts.map((p,i)=>`${i?'L':'M'}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(' ');
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d',dd); path.setAttribute('fill','none');
     path.setAttribute('stroke',se.color); path.setAttribute('stroke-width',se.w||2.2);
@@ -363,7 +366,7 @@ function lineChart(mount, series, o={}){
     s.appendChild(path);
     se.pts.forEach((p,i)=>{
       const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('cx',X(i)); c.setAttribute('cy',Y(p.y)); c.setAttribute('r',3);
+      c.setAttribute('cx',X(p.x)); c.setAttribute('cy',Y(p.y)); c.setAttribute('r',3);
       c.setAttribute('fill',se.color); c.setAttribute('stroke','#fff'); c.setAttribute('stroke-width',1.4);
       const ti=document.createElementNS('http://www.w3.org/2000/svg','title');
       ti.textContent=`${se.name} · ${p.x}: ${o.fmtP? o.fmtP(p.y):fmtM(p.y)}`; c.appendChild(ti);
@@ -568,7 +571,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
   // годовые
   const ann=annual.map(a=>({l:String(a.year),v:a.usd/1e6,color:a.year===2026?'#94a3b8':'#2563eb'}));
   ann.push({l:'2026*',v:est2026/1e6,color:'#f59e0b'});
-  barV($('ch-annual'),ann,{fmt:v=>v.toFixed(0)});
+  barV($('ch-annual'),ann,{fmt:v=>v.toFixed(0),fmtY:v=>fmtAxis(v)});
   const t10=top2025.slice(0,10).map(r=>({l:r.c,v:r.u/1e6}));
   barH($('ch-top10'),t10,{fmt:v=>v.toFixed(0),rowH:24,l:150});
   // месячные 2026
@@ -581,7 +584,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
     });
     return {name:c,color:hex(i),pts};
   }).filter(s=>s.pts.some(p=>p.y>0));
-  lineChart($('ch-monthly26'),series,{unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')+' млн'});
+  lineChart($('ch-monthly26'),series,{unit:'млн $',fmtY:v=>fmtAxis(v),fmtP:v=>v.toFixed(1).replace('.',',')+' млн'});
   $('lg-monthly26').innerHTML=series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')+'<span><i style="background:#94a3b8"></i>2026* — оценка года по 9 мес.</span>';
 
   $('ov-facts').innerHTML=[
@@ -646,8 +649,8 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
 
   // Китай USD / kg
   const cnE=DATA.china.e33049900;
-  lineChart($('ch-cn-usd'),[{name:'Китай → РФ',color:'#2563eb',pts:cnE.map(r=>({x:r.m.slice(5),y:r.usd/1e6}))}],{h:260,unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')});
-  barV($('ch-cn-kg'),cnE.map((r,i)=>({l:r.m.slice(5),v:r.kg/1000,color:i<10?'#2563eb':'#0ea5e9'})),{h:260,fmt:v=>v.toFixed(0)});
+  lineChart($('ch-cn-usd'),[{name:'Китай → РФ',color:'#2563eb',pts:cnE.map(r=>({x:r.m.slice(5),y:r.usd/1e6}))}],{h:260,unit:'млн $',fmtY:v=>fmtAxis(v),fmtP:v=>v.toFixed(1).replace('.',',')});
+  barV($('ch-cn-kg'),cnE.map((r,i)=>({l:r.m.slice(5),v:r.kg/1000,color:i<10?'#2563eb':'#0ea5e9'})),{h:260,fmt:v=>v.toFixed(0),fmtY:v=>fmtInt(v),unit:'т'});
 
   // таблица
   makeTable('tbl-import',{
@@ -700,7 +703,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
     {name:'3304 вся группа',color:'#94a3b8',pts:s3,dash:true},
     {name:'33049900 (филлеры+косметика)',color:'#2563eb',pts:s1},
     {name:'30067000 медгели',color:'#10b981',pts:s2}
-  ],{h:280,unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')});
+  ],{h:280,unit:'млн $',fmtY:v=>fmtAxis(v),fmtP:v=>v.toFixed(1).replace('.',',')});
   $('ch-cn-struct').insertAdjacentHTML('afterend','<div class="legend"><span><i style="background:#94a3b8"></i>3304 — вся группа</span><span><i style="background:#2563eb"></i>33049900</span><span><i style="background:#10b981"></i>30067000</span></div>');
 
   // модели Belotero по рознице
@@ -716,7 +719,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
   });
   const order=['Lips Contour','Lips Shape','Soft','Balance','Hydro','Intense','Revive','Volume','прочее'];
   const mItems=order.filter(k=>map[k]&&map[k].length>=2).map(k=>({l:k,v:quantile(map[k].sort((a,b)=>a-b),.5),n:map[k].length}));
-  barV($('ch-belo-models'),mItems,{h:280,fmt:v=>fmtInt(v)});
+  barV($('ch-belo-models'),mItems,{h:280,fmt:v=>fmtInt(v),fmtY:v=>fmtInt(v),unit:'₽'});
 
   // таблица регистраций
   makeTable('tbl-regs',{
@@ -749,7 +752,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
   });
   rangeChart($('ch-range'),stats.map(s=>({l:s.b,p10:s.p10,p25:s.p25,p50:s.p50,p75:s.p75,p90:s.p90})));
   const med=stats.slice().sort((a,b)=>a.p50-b.p50).map(s=>({l:s.b,v:s.p50,fmt:fmtInt}));
-  barV($('ch-med'),med.map((m,i)=>({l:m.l,v:m.v,color:m.l==='Belotero'?'#2563eb':hex(i+1)})),{h:280,fmt:v=>fmtInt(v)});
+  barV($('ch-med'),med.map((m,i)=>({l:m.l,v:m.v,color:m.l==='Belotero'?'#2563eb':hex(i+1)})),{h:280,fmt:v=>fmtInt(v),fmtY:v=>fmtInt(v),unit:'₽'});
   makeTable('tbl-brands',{
     csv:'бренды_цены',
     search:'Поиск бренда…',
@@ -841,20 +844,20 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
     const rows=fcTable(sc,share);
     const base=fcTable('base',share), opt=fcTable('opt',share), pes=fcTable('pes',share);
     const hist=annual.map(a=>({x:String(a.year),y:a.usd/1e6}));
-    const mk=(rows,color,name,dash)=>({name,color,dash,pts:[{x:'2026',y:rows[0].total/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.total/1e6}))]});
+    const mk=(rows,color,name,dash)=>({name,color,dash,pts:[{x:'2025',y:hist[hist.length-1].y},{x:'2026',y:rows[0].total/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.total/1e6}))]});
     lineChart($('ch-fc'),[
       {name:'Факт 2019–2025',color:'#0f172a',pts:hist},
       mk(base,'#2563eb','Базовый'),
       mk(opt,'#10b981','Оптимистичный',true),
       mk(pes,'#f43f5e','Пессимистичный',true)
-    ],{h:310,unit:'млн $',fmtP:v=>fmtM(v)+' млн'});
+    ],{h:310,unit:'млн $',fmtY:v=>fmtAxis(v),fmtP:v=>fmtM(v)+' млн'});
     $('lg-fc').innerHTML='<span><i style="background:#0f172a"></i>Факт</span><span><i style="background:#2563eb"></i>Базовый</span><span><i style="background:#10b981"></i>Оптимистичный</span><span><i style="background:#f43f5e"></i>Пессимистичный</span>';
     const belo=[{name:'Belotero',color:'#2563eb',pts:hist.map(h=>({x:h.x,y:h.y*share})),dash:false},
       ...[mk(base,'#0ea5e9','')].map(s=>({name:'прогноз',color:'#0ea5e9',pts:s.pts}))];
     lineChart($('ch-fc-belo'),[
       {name:'Факт (доля '+ (share*100).toFixed(1).replace('.',',') +'%)',color:'#0f172a',pts:hist.map(h=>({x:h.x,y:h.y*share}))},
-      {name:'Прогноз',color:'#0ea5e9',pts:[{x:'2026',y:rows[0].belo/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.belo/1e6}))]}
-    ],{h:310,unit:'млн $',fmtP:v=>fmtM(v)+' млн'});
+      {name:'Прогноз',color:'#0ea5e9',pts:[{x:'2025',y:hist[hist.length-1].y*share},{x:'2026',y:rows[0].belo/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.belo/1e6}))]}
+    ],{h:310,unit:'млн $',fmtY:v=>fmtAxis(v),fmtP:v=>fmtM(v)+' млн'});
     const tbl=[
       {year:2025,total:y25,belo:y25*share,growth:(y25/annualMap[2024]-1),kind:'факт'},
       ...rows
