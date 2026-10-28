@@ -621,7 +621,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
   const cmp=top2025.slice(0,12).map(r=>({l:r.c,a:r.u/1e6,b:countryYtd(r.c)/1e6}));
   (function(){
     const mount=$('ch-cmp'); mount.innerHTML='';
-    const W=760,H=330,pad={l:52,r:12,t:16,b:56};
+    const W=760,H=330,pad={l:52,r:12,t:24,b:56};
     const s=svgEl(W,H); mount.appendChild(s);
     const max=niceMax(Math.max(...cmp.map(d=>Math.max(d.a,d.b))));
     const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b, bw=Math.min(24,iw/cmp.length*0.36);
@@ -630,7 +630,7 @@ const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u
       const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
       ln.setAttribute('x1',pad.l);ln.setAttribute('x2',W-pad.r);ln.setAttribute('y1',y);ln.setAttribute('y2',y);
       ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
-      txt(s,pad.l-6,y+3.5,fmtM(max*g/4),{anchor:'end',fs:10.5});
+      txt(s,pad.l-6,y+3.5,fmtAxis(max*g/4),{anchor:'end',fs:10.5});
     }
     cmp.forEach((d,i)=>{
       const cx=pad.l+iw*(i+0.5)/cmp.length;
