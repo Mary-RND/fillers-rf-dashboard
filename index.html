@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рынок филлеров ГК — Россия | Пилотный дашборд</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --blue:#2563eb; --blue2:#0ea5e9; --green:#10b981; --amber:#f59e0b; --red:#ef4444; --violet:#8b5cf6;
+  --c1:#2563eb; --c2:#0ea5e9; --c3:#10b981; --c4:#f59e0b; --c5:#8b5cf6; --c6:#ec4899; --c7:#14b8a6; --c8:#f43f5e; --c9:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}
+header.top{background:linear-gradient(120deg,#0f172a,#1e3a8a 70%,#1d4ed8);color:#fff;padding:20px 28px 16px}
+header.top h1{margin:0 0 4px;font-size:21px;font-weight:700}
+header.top .sub{opacity:.85;font-size:13px}
+.badges{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:3px 10px;font-size:12px}
+nav.tabs{display:flex;gap:2px;background:#0f172a;padding:0 20px;position:sticky;top:0;z-index:50;overflow-x:auto}
+nav.tabs button{background:transparent;border:0;color:#94a3b8;padding:12px 16px;font-size:13.5px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;font-weight:600}
+nav.tabs button:hover{color:#e2e8f0}
+nav.tabs button.on{color:#fff;border-bottom-color:var(--blue2)}
+main{padding:22px 26px 60px;max-width:1440px;margin:0 auto}
+section.tab{display:none}
+section.tab.on{display:block}
+h2.sec{font-size:17px;margin:26px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h2.sec:first-child{margin-top:0}
+.grid{display:grid;gap:14px}
+.g6{grid-template-columns:repeat(6,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:1fr 1fr}
+@media(max-width:1100px){.g6,.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.kpi .lab{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:24px;font-weight:700;margin:6px 0 2px}
+.kpi .val.small{font-size:19px}
+.kpi .delta{font-size:12.5px;font-weight:600}
+.up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
+.kpi .note{font-size:11.5px;color:var(--muted);margin-top:4px}
+.callout{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:10px 14px;font-size:13px;margin:12px 0}
+.callout.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.callout.gray{background:#f8fafc;border-color:var(--line);color:var(--muted)}
+.chart{width:100%;overflow:visible}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.tbl-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 8px}
+.tbl-tools input[type=text],.tbl-tools select{padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:var(--card);color:var(--ink)}
+.tbl-tools input[type=text]{min-width:200px}
+.tbl-tools .cnt{color:var(--muted);font-size:12.5px;margin-left:auto}
+.tbl-tools button{padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;cursor:pointer;font-size:12.5px}
+.tbl-tools button:hover{border-color:var(--blue);color:var(--blue)}
+table.data{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+table.data th{position:sticky;top:44px;background:var(--thbg,#f8fafc);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap;font-size:12.5px;color:#334155}
+table.data th:hover{color:var(--blue)}
+table.data td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.data tr:hover td{background:var(--hover,#f8fbff)}
+table.data td.num,table.data th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.data .muted{color:var(--muted);font-size:12px}
+.tbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.pager{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.pager button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:3px 9px;cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+ul.notes{margin:8px 0;padding-left:20px;color:#334155;font-size:13px}
+ul.notes li{margin:5px 0}
+.tag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:600}
+.tag.ok{background:#dcfce7;color:#166534} .tag.est{background:#fef3c7;color:#92400e} .tag.na{background:#f1f5f9;color:#64748b} .tag.brand{background:#dbeafe;color:#1d4ed8}
+.foot{color:var(--muted);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+.ctrl{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+.ctrl label{font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:center}
+.ctrl select,.ctrl input{padding:5px 9px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:var(--card);color:var(--ink)}
+/* --- темы --- */
+:root{--thbg:#f8fafc;--hover:#f8fbff}
+[data-theme=dark]{--bg:#0b1220;--card:#121a2c;--ink:#e2e8f0;--ink2:#cbd5e1;--muted:#8ea0b5;--line:#223049;--thbg:#182238;--hover:#17223a}
+[data-theme=dark] .callout{filter:saturate(.92)}
+[data-theme=dark] .tag.ok{background:#11331f;color:#86efac}
+[data-theme=dark] .tag.est{background:#3a2c07;color:#fcd34d}
+[data-theme=dark] .tag.na{background:#1c2942;color:#94a3b8}
+[data-theme=dark] .tag.brand{background:#172b57;color:#93c5fd}
+header.top{position:relative}
+.hctrl{position:absolute;right:22px;top:16px;display:flex;gap:8px;z-index:5}
+.hctrl button{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.hctrl button:hover{background:rgba(255,255,255,.26)}
+.card{position:relative}
+.grid{position:relative}
+.xbtn{position:absolute;top:9px;right:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;padding:4px 9px;font-size:11.5px;cursor:pointer;z-index:5}
+.xbtn:hover{color:var(--blue);border-color:var(--blue)}
+/* --- защита контента --- */
+body{-webkit-user-select:none;-moz-user-select:none;user-select:none}
+input,select,textarea{user-select:text;-webkit-user-select:text}
+.blurlock{filter:blur(6px);user-select:none!important;pointer-events:none}
+/* --- демо-режим: цифры размыты --- */
+body.demo .chart svg{filter:blur(7px)}
+.nb{filter:blur(6px);user-select:none!important;pointer-events:none;display:inline-block;min-width:2ch}
+.nb-skip .nb,.nb-skip{filter:none!important}
+@media print{
+  nav.tabs,.tbl-tools,.ctrl,.xbtn,.hctrl,.foot,.pager{display:none!important}
+  body{background:#fff;color:#0f172a}
+  main{max-width:none;padding:0 8mm}
+  section.tab{display:block!important;page-break-before:always}
+  section.tab:first-of-type{page-break-before:auto}
+  .tbl-wrap{max-height:none!important;overflow:visible!important;border:0}
+  .card{break-inside:avoid;border-color:#d5dbe5}
+  table.data th{position:static;background:#eef2f7!important;color:#0f172a;-webkit-print-color-adjust:exact}
+}</style>
+</head>
+<body>
+<header class="top">
+  <h1 id="ttl">Рынок филлеров на основе гиалуроновой кислоты — Россия</h1>
+  <div class="sub" id="subttl">Пилотный дашборд · весь рынок РФ · тестовый бренд Belotero (Merz Pharma / Anteis SA)</div>
+  <div class="hctrl"><button id="btn-theme">🌙 Тёмная тема</button></div>
+  <div class="badges">
+    <span class="badge" id="bd-period">Факт: 2025–2026 · Прогноз: до 2029</span>
+    <span class="badge" id="bd-date">Данные на —</span>
+    <span class="badge">Импорт: 3304.99 (вся косметика — верхняя граница категории)</span>
+    <span class="badge">Источники: UN Comtrade · Таможня КНР · ФНС БФО · Госреестр МИ · ПроДокторов</span>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-t="ov" class="on">Обзор</button>
+  <button data-t="im">Импорт</button>
+  <button data-t="st">Структура</button>
+  <button data-t="cn">Конкуренция</button>
+  <button data-t="t5">ТОП-5</button>
+  <button data-t="fc">Прогноз 2029</button>
+  <button data-t="vd">Выводы</button>
+  <button data-t="dp">Паспорт данных</button>
+</nav>
+<main>
+
+<!-- ОБЗОР -->
+<section class="tab on" id="tab-ov">
+  <div class="grid g6" id="ov-kpi"></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Импорт 3304.99 в РФ, млн $ (годовые, зеркало Comtrade)</div><div class="chart" id="ch-annual"></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Топ-10 стран-экспортёров в РФ, 2025, млн $</div><div class="chart" id="ch-top10"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;margin-bottom:6px">Помесячный импорт в РФ из публикующихся стран, 2026, млн $</div><div class="chart" id="ch-monthly26"></div>
+    <div class="legend" id="lg-monthly26"></div>
+    <div class="callout gray" style="margin-bottom:0">Франция, Республика Корея, Турция, Нидерланды, США, Австрия, Ирландия и ОАЭ не публикуют помесячные данные — их вклад показан только в годовом срезе 2025. Сентябрь 2026 в Comtrade ещё не опубликован (для 10 стран ряд заканчивается августом).</div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Ключевые факты</div><ul class="notes" id="ov-facts"></ul></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Belotero в контексте рынка</div><ul class="notes" id="ov-brand"></ul></div>
+  </div>
+</section>
+
+<!-- ИМПОРТ -->
+<section class="tab" id="tab-im">
+  <div class="callout">Код <b>3304.99</b> включает <b>всю косметику</b> категории (кремы, маски, декоративная косметика и др.), а не только филлеры: значения импорта — <b>верхняя граница</b> объёма рынка филлеров. Данные — зеркальная статистика (экспорт стран-партнёров в РФ), возможны расхождения с данными таможни РФ.</div>
+  <div class="grid g4" id="im-kpi"></div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;margin-bottom:6px">Сравнение стран: 2025 (год) vs 2026 (9 мес.), млн $</div><div class="chart" id="ch-cmp"></div></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Китай → РФ, помесячно 33049900, млн $</div><div class="chart" id="ch-cn-usd"></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Китай → РФ, помесячно 33049900, тонн</div><div class="chart" id="ch-cn-kg"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:600">Таблица импорта (фильтры, сортировка)</div>
+    <div id="tbl-import"></div>
+  </div>
+</section>
+
+<!-- СТРУКТУРА -->
+<section class="tab" id="tab-st">
+  <div class="grid g2">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Доли стран в импорте 2025, %</div><div class="chart" id="ch-share25"></div><div class="legend" id="lg-share25"></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Динамика долей топ-5 стран, 2019–2025, %</div><div class="chart" id="ch-sharetrend"></div><div class="legend" id="lg-sharetrend"></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Китай: структура кодов, помесячно, млн $ (2025-03…2026-09)</div><div class="chart" id="ch-cn-struct"></div>
+      <div class="callout gray" style="margin-bottom:0">33049900 — весь 3304.99 (филлеры + косметика); 30067000 — медицинские гели; 3304 — вся группа включает губную/глазную/ногтевую косметику.</div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Розничные цены по моделям Belotero, медиана, ₽</div><div class="chart" id="ch-belo-models"></div>
+      <div class="callout gray" style="margin-bottom:0">Из прайсов клиник Москвы (ПроДокторов); процедура (чаще 1 мл или губы 0,6 мл).</div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:600;margin-bottom:4px">Регистрации Belotero в Госреестре МИ (7 действующих)</div>
+    <div id="tbl-regs"></div>
+  </div>
+</section>
+
+<!-- КОНКУРЕНЦИЯ -->
+<section class="tab" id="tab-cn">
+  <div class="callout">Розничные цены — <b>клиники Москвы</b> (ПроДокторов), 552 позиции, 6 брендов. Маркетплейсы (Ozon/WB) и аптеки антиботом закрыты — данных нет. Цены за процедуру, не оптовые.</div>
+  <div class="card"><div style="font-weight:600;margin-bottom:6px">Ценовой коридор по брендам: P10–P90, медиана, ₽</div><div class="chart" id="ch-range"></div>
+    <div class="callout gray" style="margin-bottom:0">Минимумы Restylane «от 209 ₽» — клиники с тарифом «за единицу коррекции», они занижают P10.</div></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Медиана цены за процедуру, ₽</div><div class="chart" id="ch-med"></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Сводная статистика по брендам</div><div id="tbl-brands"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div style="font-weight:600;margin-bottom:4px">Все цены (фильтр по бренду, клинике, цене)</div>
+    <div id="tbl-prices"></div>
+  </div>
+</section>
+
+<!-- ТОП-5 -->
+<section class="tab" id="tab-t5">
+  <div class="ctrl">
+    <label>Метрика <select id="t5-metric"></select></label>
+    <label>Год <select id="t5-year"></select></label>
+    <span class="cnt" id="t5-hint"></span>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="chart" id="ch-t5"></div></div>
+    <div class="card"><div id="tbl-t5"></div></div>
+  </div>
+</section>
+
+<!-- ПРОГНОЗ -->
+<section class="tab" id="tab-fc">
+  <div class="callout warn"><b>Методика.</b> База — годовые ряды импорта 2019–2025 (зеркало Comtrade, 3304.99). 2026 — оценка: фактические 9 мес. по публикующимся странам (252,3 млн $) + 9/12 от 2025 для стран без помесячных (354,2 млн $) → год ≈ <b>809 млн $</b>. Прогноз 2027–2029 — CAGR 2019–2025 с поправкой сценария. Доля Belotero 9,3% — экспертная оценка заказчика (не таможенный факт).</div>
+  <div class="callout"><b>Привязка базового сценария к 2019 году.</b> Базовый темп роста — среднегодовой темп CAGR, рассчитанный от первого года ряда (2019, 691,7 млн $) до последнего фактического (2025, 820,8 млн $): (820,8 / 691,7)<sup>1/6</sup> − 1 = <b>2,9% в год</b>. Окно с 2019 выбрано специально: оно охватывает <b>полный цикл</b> рынка — рост 2019–2021, шок 2022 (−30%, 532,8 млн $) и восстановление 2023–2025, поэтому темп отражает структурную динамику, а не короткий импульс. Проверка на других окнах: от пика 2021 темп = 1,7%/год, от 2023 = 5,9%/год, от 2022 (артефакт отскока) = 15,5%/год — последнее завышает прогноз и как базу не используется. Сценарии: база = CAGR 2019–2025; оптимистичный/пессимистичный = ±3 п.п. к нему. Итоговая точность: оценка 2026 ≈ ±5–8%, к 2029 коридор сценариев расширяется до ±15–20%.</div>
+  <div class="ctrl">
+    <label>Сценарий <select id="fc-sc">
+      <option value="base">Базовый (CAGR 2019–2025)</option>
+      <option value="opt">Оптимистичный (+3 п.п.)</option>
+      <option value="pes">Пессимистичный (−3 п.п.)</option>
+    </select></label>
+    <label>Доля Belotero, % <input type="number" id="fc-share" min="0" max="30" step="0.1" value="9.3" style="width:74px"></label>
+    <span class="cnt nb-skip">Прогноз до 2029 года</span>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Импорт в РФ, млн $: факт и прогноз (3 сценария)</div><div class="chart" id="ch-fc"></div><div class="legend" id="lg-fc"></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Сегмент Belotero при выбранной доле, млн $</div><div class="chart" id="ch-fc-belo"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;margin-bottom:4px">Таблица прогноза</div><div id="tbl-fc"></div></div>
+</section>
+
+<section class="tab" id="tab-vd">
+  <div class="callout warn" id="vd-note">🔒 Превью аналитических выводов: показано первое предложение каждого блока, остальной текст скрыт. Полные выводы предоставляются по запросу.</div>
+  <div class="card"><div style="font-weight:600;margin-bottom:6px">Аналитические выводы: рынок филлеров РФ и бренд Belotero</div><ul class="notes" id="vd-market"></ul></div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;margin-bottom:6px">Выводы по прогнозной аналитике · сценарий: <span id="vd-sc">базовый</span> · доля Belotero: <span id="vd-share"></span></div><ul class="notes" id="vd-forecast"></ul>
+    <div style="font-weight:600;margin:10px 0 4px">Чувствительность сегмента Belotero к доле (2029, млн $)</div><div class="chart" id="ch-vd-sens"></div></div>
+</section>
+<!-- ПАСПОРТ -->
+<section class="tab" id="tab-dp">
+  <div class="card"><div style="font-weight:600;margin-bottom:6px">Источники данных</div><div id="tbl-src"></div></div>
+  <div class="card" style="margin-top:14px"><div style="font-weight:600;margin-bottom:6px">Ограничения и пометки</div><ul class="notes" id="dp-caveats"></ul></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Файлы-источники (Этап 0)</div><ul class="notes" id="dp-files"></ul></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Компании: выручка БФО ФНС, тыс ₽</div><div id="tbl-fin"></div>
+      <div class="callout gray" style="margin-bottom:0">Выручка компании целиком (весь фарма-опт), не только филлеры.</div></div>
+  </div>
+</section>
+
+<div class="foot" id="foot"></div>
+</main>
+
+<script>
+"use strict";
+const DATA = {"meta":{"generated":"28.10.2026","title":"Рынок филлеров на основе гиалуроновой кислоты — Россия","period":"2025–2026 (факт), прогноз до 2029","brand":"Belotero (Merz Pharma / Anteis SA)","beloteroShare":9.3,"caveats":["Код ТН ВЭД 3304.99 — вся косметика категории, не только филлеры: показатели импорта — верхняя граница категории.","Импорт РФ — зеркальная статистика (экспорт стран-партнёров в РФ): возможны расхождения с таможенными данными РФ (CIF/FOB, транзит).","Китай: официальная помесячная статистика с 2025-03; январь–февраль 2025 недоступны (оценка).","Франция, Республика Корея, Турция, Нидерланды, США, Австрия, Ирландия, ОАЭ — нет помесячных данных 2026 (только годовые 2025).","Сентябрь 2026 в Comtrade ещё не опубликован большинством стран — ряды обрываются на августе (для 10 стран) / сентябре (Китай).","Розничные цены — клиники Москвы (ПроДокторов), процедуры, не оптовые цены; маркетплейсы (Ozon/WB) — антибот, данных нет.","Финансы компаний — БФО ФНС: выручка компании целиком, не только филлеры.","Доля Belotero 9,3% — экспертная оценка заказчика, не таможенный факт."]},"registrations":[{"reg":"РЗН 2016/3853","erul":"Г004-00110-00/02935321","model":"базовая","name":"Имплантат с вязкоупругими свойствами на основе перекрестно сшитого гиалуроната натрия для коррекции рельефа тканей линии Белотеро (Belotero)","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"«Антейс СА» (Anteis SA), 18 Chemin des Aulx, 1228 Plan-les-Ouates, Gen…","country":"Швейцария","date":"11.04.2016","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"РЗН 2023/20195","erul":"Г004-00110-00/02939021","model":"Volume Lidocaine","name":"Белотеро Вольюм с лидокаином (Belotero Volume Lidocaine)","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Anteis S.A. (Антейс С.А.), Швейцария","country":"Швейцария","date":"12.05.2023","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"РЗН 2023/20955","erul":"Г004-00110-00/02933784","model":"Revive","name":"Белотеро Ревайв (Belotero Revive)","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Anteis S.A. (Антейс С.А.), Швейцария","country":"Швейцария","date":"07.09.2023","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"РЗН 2019/9022","erul":"Г004-00110-00/02935307","model":"Hydro","name":"Белотеро Гидро (Belotero Hydro)","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Антейс СА (Anteis SA), Швейцария","country":"Швейцария","date":"07.10.2019","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"РЗН 2018/6815","erul":"Г004-00110-00/02935294","model":"Volume","name":"Белотеро Вольюм (Belotero Volume)","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Антейс СА (Anteis SA), Швейцария; доп. Merz Aesthetics GmbH Германия","country":"Швейцария","date":"13.02.2018","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"ФСЗ 2009/04843","erul":"Г004-00110-00/02913113","model":"Balance","name":"Белотеро Баланс (Belotero Balance) + Белотеро Софт (Belotero Soft) шприц 1 мл","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Антейс СА (Anteis SA), Швейцария","country":"Швейцария","date":"28.11.2006","expiry":"Бессрочно","risk":"3","status":"Действует"},{"reg":"ФСЗ 2009/04240","erul":"Г004-00110-00/04137952","model":"Intense","name":"Белотеро Интенс (Belotero Intense) шприц 1 мл","holder":"ООО \"МЕРЦ ФАРМА\"","manufacturer":"Антеис С.А. (Anteis S.A.), Швейцария","country":"Швейцария","date":"07.05.2009","expiry":"Бессрочно","risk":"3","status":"Действует"}],"importSvod":[{"c":"Австрия","p":"2019","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2020","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2021","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2022","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2023","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2024","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Австрия","p":"2025","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Бельгия","p":"2019","t":"год","u":5621841,"k":195488,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2020","t":"год","u":3356233,"k":85638,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2021","t":"год","u":5014340,"k":139800,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2022","t":"год","u":937577,"k":30517,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2023","t":"год","u":669114,"k":23414,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2024","t":"год","u":4303795,"k":81288,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2025","t":"год","u":12506440,"k":178031,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-01","t":"месяц","u":708599,"k":7462,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-02","t":"месяц","u":593568,"k":7272,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-03","t":"месяц","u":654170,"k":7318,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-04","t":"месяц","u":1045531,"k":10420,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-05","t":"месяц","u":329920,"k":4644,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Бельгия","p":"2026-06","t":"месяц","u":430378,"k":6383,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2019","t":"год","u":7236870,"k":297634,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2020","t":"год","u":3381237,"k":137387,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2021","t":"год","u":21021423,"k":780836,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2022","t":"год","u":5132079,"k":225823,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2023","t":"год","u":3933867,"k":151304,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2024","t":"год","u":1871085,"k":51198,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2025","t":"год","u":1018469,"k":35038,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-01","t":"месяц","u":40774,"k":2152,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-02","t":"месяц","u":20529,"k":316,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-03","t":"месяц","u":77116,"k":3615,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-04","t":"месяц","u":36109,"k":1258,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-05","t":"месяц","u":70329,"k":2197,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-06","t":"месяц","u":49893,"k":1637,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-07","t":"месяц","u":54869,"k":1518,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Великобритания","p":"2026-08","t":"месяц","u":132677,"k":2936,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2019","t":"год","u":92118688,"k":2370450,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2020","t":"год","u":61272877,"k":1762179,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2021","t":"год","u":73780311,"k":2357396,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2022","t":"год","u":51506685,"k":1197718,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2023","t":"год","u":47864246,"k":1105381,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2024","t":"год","u":60983996,"k":1270932,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2025","t":"год","u":64071923,"k":1339321,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-01","t":"месяц","u":6135467,"k":74866,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-02","t":"месяц","u":5903874,"k":96673,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-03","t":"месяц","u":6343595,"k":86807,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-04","t":"месяц","u":4209267,"k":96673,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-05","t":"месяц","u":2040579,"k":42303,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-06","t":"месяц","u":4377145,"k":109223,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-07","t":"месяц","u":6142634,"k":145132,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Германия","p":"2026-08","t":"месяц","u":7272943,"k":71031,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2019","t":"год","u":25060000,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2020","t":"год","u":28655000,"k":1074224,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2021","t":"год","u":31628000,"k":1417907,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2022","t":"год","u":27394000,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2023","t":"год","u":40403000,"k":1388147,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2024","t":"год","u":34283000,"k":1032735,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2025","t":"год","u":33372000,"k":1011918,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-01","t":"месяц","u":2436000,"k":73865,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-02","t":"месяц","u":4241000,"k":128597,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-03","t":"месяц","u":4141000,"k":125565,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-04","t":"месяц","u":3678000,"k":111526,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-05","t":"месяц","u":2417000,"k":73289,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-06","t":"месяц","u":2266000,"k":68711,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-07","t":"месяц","u":3050000,"k":92483,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Израиль","p":"2026-08","t":"месяц","u":2032000,"k":61615,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2019","t":"год","u":938084,"k":74537,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2020","t":"год","u":880537,"k":118839,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2021","t":"год","u":1784615,"k":142188,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2022","t":"год","u":1085302,"k":94860,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2023","t":"год","u":2269625,"k":151749,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2024","t":"год","u":2053747,"k":157714,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-01","t":"месяц","u":103995,"k":5998,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-02","t":"месяц","u":195686,"k":6688,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-03","t":"месяц","u":152258,"k":23923,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-04","t":"месяц","u":2223,"k":70802,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-05","t":"месяц","u":127983,"k":5103,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-06","t":"месяц","u":514756,"k":23689,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Индия","p":"2026-07","t":"месяц","u":53688,"k":6228,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2019","t":"год","u":69481,"k":38005,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2020","t":"год","u":91500,"k":36510,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2021","t":"год","u":157668,"k":25618,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2022","t":"год","u":26668,"k":10718,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2023","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Ирландия","p":"2024","t":"год","u":6912,"k":211,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Ирландия","p":"2025","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"Испания","p":"2019","t":"год","u":14372523,"k":224202,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2020","t":"год","u":5223554,"k":161179,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2021","t":"год","u":12907646,"k":360016,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2022","t":"год","u":13803182,"k":331932,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2023","t":"год","u":15704020,"k":467107,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2024","t":"год","u":23428094,"k":694047,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2025","t":"год","u":21564442,"k":502312,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-01","t":"месяц","u":1589261,"k":38292,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-02","t":"месяц","u":1614041,"k":33413,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-03","t":"месяц","u":1229126,"k":26548,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-04","t":"месяц","u":2129026,"k":38376,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-05","t":"месяц","u":2300372,"k":25060,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Испания","p":"2026-06","t":"месяц","u":2454167,"k":37681,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2019","t":"год","u":14264567,"k":1430620,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2020","t":"год","u":11826904,"k":1123260,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2021","t":"год","u":18553276,"k":1403890,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2022","t":"год","u":14818103,"k":670772,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2023","t":"год","u":26832079,"k":754651,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2024","t":"год","u":57128393,"k":1305458,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2025","t":"год","u":44546010,"k":1036967,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-01","t":"месяц","u":1225339,"k":61694,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-02","t":"месяц","u":2343490,"k":26778,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-03","t":"месяц","u":2166005,"k":35304,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-04","t":"месяц","u":4868901,"k":71371,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-05","t":"месяц","u":1827919,"k":31938,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-06","t":"месяц","u":2293493,"k":35042,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Италия","p":"2026-07","t":"месяц","u":1643924,"k":36226,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2019","t":"год","u":12065070,"k":1727063,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2020","t":"год","u":14995736,"k":2096997,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2021","t":"год","u":20779702,"k":2675089,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2022","t":"год","u":24156823,"k":2899452,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2023","t":"год","u":58700235,"k":6514447,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2024","t":"год","u":52571451,"k":6826277,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2025","t":"год","u":85899247,"k":14004675,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Китай","p":"2025-03","t":"месяц","u":4061878,"k":642159,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-04","t":"месяц","u":7496922,"k":1107485,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-05","t":"месяц","u":5209092,"k":1078939,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-06","t":"месяц","u":6745957,"k":964515,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-07","t":"месяц","u":8529140,"k":1381843,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-08","t":"месяц","u":10972085,"k":1625470,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-09","t":"месяц","u":7765612,"k":1329487,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-10","t":"месяц","u":3875595,"k":736916,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-11","t":"месяц","u":9037815,"k":1541877,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2025-12","t":"месяц","u":11229984,"k":2033379,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-01","t":"месяц","u":10862087,"k":1900512,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-02","t":"месяц","u":14737082,"k":2449653,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-03","t":"месяц","u":5224376,"k":876881,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-04","t":"месяц","u":11280336,"k":1705074,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-05","t":"месяц","u":12391010,"k":1645889,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-06","t":"месяц","u":11870915,"k":1612824,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-07","t":"месяц","u":12252313,"k":1779373,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-08","t":"месяц","u":13445434,"k":2147012,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Китай","p":"2026-09","t":"месяц","u":18521139,"k":2247550,"s":"Главное таможенное управление КНР (stats.customs.gov.cn)","n":""},{"c":"Нидерланды","p":"2019","t":"год","u":7584707,"k":332591,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2020","t":"год","u":4724366,"k":267224,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2021","t":"год","u":8220036,"k":373280,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2022","t":"год","u":1057976,"k":28243,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2023","t":"год","u":274953,"k":10711,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2024","t":"год","u":415123,"k":15521,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Нидерланды","p":"2025","t":"год","u":329496,"k":11153,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"ОАЭ","p":"2019","t":"год","u":51171,"k":8721,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"ОАЭ","p":"2021","t":"год","u":334441,"k":57752,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"ОАЭ","p":"2022","t":"год","u":1616389,"k":86294,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"ОАЭ","p":"2023","t":"год","u":21570995,"k":639656,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2019","t":"год","u":125879736,"k":18216320,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2020","t":"год","u":112184838,"k":15091353,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2021","t":"год","u":126153954,"k":14673994,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2022","t":"год","u":73796042,"k":9688080,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2023","t":"год","u":99329158,"k":9883431,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2024","t":"год","u":88368341,"k":8749510,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2025","t":"год","u":73768694,"k":7399343,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-01","t":"месяц","u":4407268,"k":446832,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-02","t":"месяц","u":4085938,"k":485922,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-03","t":"месяц","u":5523226,"k":610888,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-04","t":"месяц","u":4058732,"k":350283,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-05","t":"месяц","u":3117610,"k":289911,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-06","t":"месяц","u":4030802,"k":228796,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-07","t":"месяц","u":5966802,"k":634876,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Польша","p":"2026-08","t":"месяц","u":4131204,"k":361872,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2019","t":"год","u":174892289,"k":10019061,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2020","t":"год","u":191183726,"k":10576873,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2021","t":"год","u":223021006,"k":11721773,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2022","t":"год","u":212705911,"k":11637505,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2023","t":"год","u":297560553,"k":14468592,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2024","t":"год","u":304828597,"k":12643384,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Республика Корея","p":"2025","t":"год","u":335632056,"k":12638652,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2019","t":"год","u":25848198,"k":1132084,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2020","t":"год","u":28784592,"k":981288,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2021","t":"год","u":30359701,"k":1149589,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2022","t":"год","u":5453523,"k":170470,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2023","t":"год","u":275453,"k":29585,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"США","p":"2024","t":"год","u":0,"k":0,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":"нет данных в Comtrade"},{"c":"США","p":"2025","t":"год","u":15759,"k":635,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2019","t":"год","u":1334722,"k":189790,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2020","t":"год","u":1012328,"k":173137,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2021","t":"год","u":1429870,"k":180749,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2022","t":"год","u":6085463,"k":489603,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2023","t":"год","u":8114536,"k":650557,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2024","t":"год","u":5959245,"k":585491,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Турция","p":"2025","t":"год","u":7500163,"k":520636,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2019","t":"год","u":165995235,"k":6895825,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2020","t":"год","u":141255184,"k":6032132,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2021","t":"год","u":167079386,"k":6544764,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2022","t":"год","u":83560368,"k":4328820,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2023","t":"год","u":98714489,"k":4871707,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2024","t":"год","u":116226745,"k":4931060,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Франция","p":"2025","t":"год","u":128813169,"k":4650875,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2019","t":"год","u":13569146,"k":264820,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2020","t":"год","u":14390224,"k":238356,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2021","t":"год","u":18518910,"k":263455,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2022","t":"год","u":6955840,"k":99727,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2023","t":"год","u":6756364,"k":65104,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2024","t":"год","u":9264179,"k":74274,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2025","t":"год","u":8688521,"k":53500,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-01","t":"месяц","u":95633,"k":868,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-02","t":"месяц","u":620800,"k":2916,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-03","t":"месяц","u":1524188,"k":19606,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-04","t":"месяц","u":313930,"k":3320,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-05","t":"месяц","u":416393,"k":1404,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-06","t":"месяц","u":404577,"k":10100,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-07","t":"месяц","u":769829,"k":2851,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Швейцария","p":"2026-08","t":"месяц","u":844023,"k":3390,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2019","t":"год","u":4799863,"k":158624,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2020","t":"год","u":4208462,"k":146314,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2021","t":"год","u":5753153,"k":198997,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2022","t":"год","u":2713346,"k":83538,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2023","t":"год","u":2690636,"k":58038,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2024","t":"год","u":2928241,"k":74372,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2025","t":"год","u":3070578,"k":69144,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-01","t":"месяц","u":53829,"k":808,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-02","t":"месяц","u":191907,"k":2915,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-03","t":"месяц","u":252863,"k":4672,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-04","t":"месяц","u":246571,"k":4530,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-05","t":"месяц","u":183849,"k":3939,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-06","t":"месяц","u":277104,"k":10771,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-07","t":"месяц","u":187052,"k":4214,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""},{"c":"Япония","p":"2026-08","t":"месяц","u":202276,"k":4898,"s":"UN Comtrade (зеркало: экспорт страны → РФ)","n":""}],"annual":[{"year":2019,"usd":691702191},{"year":2020,"usd":627427298},{"year":2021,"usd":766497438},{"year":2022,"usd":532805277},{"year":2023,"usd":731663323},{"year":2024,"usd":764620944},{"year":2025,"usd":820796967}],"ytd2026":{"knownUsd":252257717,"missingEstUsd":354217982,"noMonthlyCountries":["Франция","Республика Корея","Турция","Нидерланды","США","Австрия","Ирландия","ОАЭ"]},"china":{"e33049900":[{"m":"2025-03","usd":4061878,"kg":642159},{"m":"2025-04","usd":7496922,"kg":1107485},{"m":"2025-05","usd":5209092,"kg":1078939},{"m":"2025-06","usd":6745957,"kg":964515},{"m":"2025-07","usd":8529140,"kg":1381843},{"m":"2025-08","usd":10972085,"kg":1625470},{"m":"2025-09","usd":7765612,"kg":1329487},{"m":"2025-10","usd":3875595,"kg":736916},{"m":"2025-11","usd":9037815,"kg":1541877},{"m":"2025-12","usd":11229984,"kg":2033379},{"m":"2026-01","usd":10862087,"kg":1900512},{"m":"2026-02","usd":14737082,"kg":2449653},{"m":"2026-03","usd":5224376,"kg":876881},{"m":"2026-04","usd":11280336,"kg":1705074},{"m":"2026-05","usd":12391010,"kg":1645889},{"m":"2026-06","usd":11870915,"kg":1612824},{"m":"2026-07","usd":12252313,"kg":1779373},{"m":"2026-08","usd":13445434,"kg":2147012},{"m":"2026-09","usd":18521139,"kg":2247550}],"i33049900":[{"m":"2025-03","usd":390791,"kg":43218},{"m":"2025-04","usd":100034,"kg":6711},{"m":"2025-05","usd":129352,"kg":10242},{"m":"2025-06","usd":78130,"kg":1530},{"m":"2025-07","usd":65059,"kg":2132},{"m":"2025-08","usd":167163,"kg":8862},{"m":"2025-09","usd":73244,"kg":7720},{"m":"2025-10","usd":237790,"kg":2933},{"m":"2025-11","usd":175123,"kg":4555},{"m":"2025-12","usd":300612,"kg":23316},{"m":"2026-01","usd":130964,"kg":818},{"m":"2026-02","usd":64888,"kg":4213},{"m":"2026-03","usd":191198,"kg":10166},{"m":"2026-04","usd":172310,"kg":7439},{"m":"2026-05","usd":245808,"kg":13957},{"m":"2026-06","usd":180966,"kg":5784},{"m":"2026-07","usd":40527,"kg":407},{"m":"2026-08","usd":143410,"kg":16162},{"m":"2026-09","usd":36216,"kg":1302}],"e30067000":[{"m":"2025-03","usd":55651,"kg":5114},{"m":"2025-04","usd":52292,"kg":9479},{"m":"2025-05","usd":47491,"kg":4462},{"m":"2025-06","usd":53786,"kg":9960},{"m":"2025-07","usd":40742,"kg":4797},{"m":"2025-08","usd":26651,"kg":2899},{"m":"2025-09","usd":1880,"kg":88},{"m":"2025-10","usd":101594,"kg":4963},{"m":"2025-11","usd":21879,"kg":4709},{"m":"2025-12","usd":235066,"kg":15505},{"m":"2026-01","usd":79131,"kg":8870},{"m":"2026-02","usd":44968,"kg":19977},{"m":"2026-03","usd":58025,"kg":6115},{"m":"2026-04","usd":173569,"kg":12717},{"m":"2026-05","usd":142156,"kg":10104},{"m":"2026-06","usd":43639,"kg":2453},{"m":"2026-07","usd":91318,"kg":2986},{"m":"2026-08","usd":269939,"kg":6561},{"m":"2026-09","usd":113093,"kg":9218}],"e3304":[{"m":"2025-03","usd":8123592,"kg":0},{"m":"2025-04","usd":11959640,"kg":0},{"m":"2025-05","usd":8850711,"kg":0},{"m":"2025-06","usd":14875207,"kg":0},{"m":"2025-07","usd":14156149,"kg":0},{"m":"2025-08","usd":20461433,"kg":0},{"m":"2025-09","usd":15557167,"kg":0},{"m":"2025-10","usd":7340305,"kg":0},{"m":"2025-11","usd":13744029,"kg":0},{"m":"2025-12","usd":18710659,"kg":0},{"m":"2026-01","usd":18214055,"kg":0},{"m":"2026-02","usd":23194228,"kg":0},{"m":"2026-03","usd":8584654,"kg":0},{"m":"2026-04","usd":17712956,"kg":0},{"m":"2026-05","usd":21235428,"kg":0},{"m":"2026-06","usd":22166406,"kg":0},{"m":"2026-07","usd":23468277,"kg":0},{"m":"2026-08","usd":23196698,"kg":0},{"m":"2026-09","usd":33585166,"kg":0}],"i3304":[{"m":"2025-03","usd":390791,"kg":0},{"m":"2025-04","usd":246284,"kg":0},{"m":"2025-05","usd":129352,"kg":0},{"m":"2025-06","usd":78130,"kg":0},{"m":"2025-07","usd":65059,"kg":0},{"m":"2025-08","usd":167163,"kg":0},{"m":"2025-09","usd":73244,"kg":0},{"m":"2025-10","usd":273593,"kg":0},{"m":"2025-11","usd":175123,"kg":0},{"m":"2025-12","usd":468011,"kg":0},{"m":"2026-01","usd":130964,"kg":0},{"m":"2026-02","usd":64888,"kg":0},{"m":"2026-03","usd":191198,"kg":0},{"m":"2026-04","usd":182932,"kg":0},{"m":"2026-05","usd":245828,"kg":0},{"m":"2026-06","usd":180986,"kg":0},{"m":"2026-07","usd":40527,"kg":0},{"m":"2026-08","usd":198643,"kg":0},{"m":"2026-09","usd":36266,"kg":0}]},"prices":[{"b":"Belotero","c":"Косметология «Доклазер»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - инъекционная контурная пластика лица препар","v":21000},{"b":"Belotero","c":"Косметология «Доклазер»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - инъекционная контурная пластика лица препар","v":22000},{"b":"Belotero","c":"«Медицинский центр Елены Малышевой»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - Белотеро Липс Шейп 0,6 мл","v":27900},{"b":"Belotero","c":"«Медицинский центр Елены Малышевой»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - Белотеро Софт 1,0 мл","v":28900},{"b":"Belotero","c":"«Медицинский центр Елены Малышевой»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - Белотеро баланс 1,0 мл","v":31900},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Контурная пластика (введение искусственных имплантатов в мягкие ткани) Belotero lips shape ( Белотеро липс ше","v":16500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение лекарственных препаратов (Belotero Revive, 1 мл)","v":20000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожная контурная пластика (Belotero Lips Contur)","v":23000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожная контурная пластика (Belotero Lips Shape)","v":23000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожная контурная пластика лица введение филлера Белотеро Липс Контур (Belotero Lips Contour), 0,6 мл","v":21300},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожная контурная пластика лица введение филлера Белотеро Липс Шейп (Belotero Lips Shape), 0,6 мл","v":21300},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожная контурная пластика лица введение филлера Белотеро Софт (Belotero Soft), 1 мл","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика филлер Belotero Soft 1 мл ( Белатеро)(1 шприц)","v":23100},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero lips shape-контурная пластика губ","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика филлер Belotero Lips Contour 0.6 мл ( Белатеро) (1 шприц)","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Belotero Lips Shape/Contour, 0,6мл","v":22500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Belotero Soft, 1 мл","v":24500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Belotero Balance, 1мл","v":25500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоревитализация БЕЛОТЕРО гидро 1мл","v":25000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Белотеро Липс контур 0,6 мл","v":27000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Белотеро Липс шейп 0,6 мл","v":27000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero Soft 1мл.","v":22500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero Intense","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero Volum 1ml","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"BELOTERO LIPS CONTOUR 0,6 мл введение искусственного импланта в мягкие ткани","v":19000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"BELOTERO LIPS SHAPE 0,6 мл введение искусственного импланта в мягкие ткани","v":19000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"BELOTERO SOFT 1 мл введение искусственного импланта в мягкие ткани","v":24000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом BELOTERO SOFT (Белотеро Софт с лидокаином) 1 мл","v":21000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом BELOTERO BALANCE (Белотеро Баланс) с лидокаином (1 мл)","v":25000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Белотеро Баланс (1мл) Носогубные складки","v":18300},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Белотеро Софт (1мл) Носогубные складки","v":18600},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Белотеро Софт (1мл) Подбородок","v":18600},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (Белотеро Софт 1 ml)","v":21800},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: Belotero Lips Contour , 0,6 мл","v":20000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани: Belotero Hydro, 1,0 мл","v":18000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: Belotero Lips Shape, 0,6 мл","v":20000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика лица: BELOTERO SOFT 1мл","v":17800},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика лица: BELOTERO BALANS 1мл","v":18900},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Интимная коррекция Belotero Voluma 1 ml","v":19500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоревитализация Belotero Hydro 1ml","v":20000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero Balance 1 шприц","v":21000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы.Контурная пластика Belotero Lips C","v":17500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы.Контурная пластика Belotero Lips S","v":17500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы.Контурная пластика Belotero Balanc","v":21500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Belotero lips contour (до 0,6 мл)","v":23900},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Belotero lips shape (до 0,6 мл)","v":23900},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Belotero soft (до 1,0 мл)","v":28900},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Belotero Balance 1 мл МСК","v":17000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение препарата Belotero lips shapes МСК","v":16000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение препарата Belotero soft МСК","v":19000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоревитализация препаратом Белотеро Гидро 1 мл","v":15800},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Объемная коррекция формы и объема губ, периоральной зоны Белотеро Софт до 1 мл","v":22200},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Объемная коррекция контуров и овала лица, средней трети, носогубных складок препаратом Белотеро Баланс до 1 мл","v":24600},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Филлер Belotero lips shape (Белотеро липс шейп) (0,6 мл)","v":22500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Филлер Belotero lips contour (Белотеро липс контур) (0,6 мл)","v":23000},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоревитализация Belotero Intense c Lid (Белотеро Интенс) 1 мл","v":29500},{"b":"Belotero","c":"Клиника «Мезомедика» (Mesomedica)","p":"Belotero soft / Белотеро Софт с лидокаином 1мл. Контурная пластика A16.07.022","v":26200},{"b":"Belotero","c":"","p":"Belotero soft / Белотеро Софт с лидокаином 1мл. Контурная пластика A16.07.022","v":26200},{"b":"Belotero","c":"","p":"Коррекция колец венеры Belotero soft","v":23000},{"b":"Belotero","c":"","p":"Белотеро Липс Контур 0,6 мл. / Belotero Lips Contour 0,6 ml. (услуга)","v":23500},{"b":"Belotero","c":"","p":"Белотеро Липс Шейп 0,6 мл. / Belotero Lips Shape 0,6 ml. (услуга)","v":23500},{"b":"Belotero","c":"","p":"Белотеро Ревайв 1,0 мл. / Belotero Revive 1,0 ml. (услуга)","v":23900},{"b":"Belotero","c":"","p":"Контурная пластика Belotero lips contour 0,6 мл","v":19500},{"b":"Belotero","c":"","p":"Контурная пластика Belotero lips shape 0,6 мл","v":21000},{"b":"Belotero","c":"","p":"Контурная пластика Belotero intense 1 мл","v":24000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Lips Shape 0,6 мл 1 шприц","v":22000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Soft 1 мл","v":22000},{"b":"Belotero","c":"","p":"Belotero Lips Contour 0,6 мл","v":15000},{"b":"Belotero","c":"","p":"Belotero Lips Shape 0,6 мл","v":15000},{"b":"Belotero","c":"","p":"Belotero Hydro","v":16000},{"b":"Belotero","c":"","p":"Белотеро Гидро 1 ml биоревитализация","v":22000},{"b":"Belotero","c":"","p":"Белотеро Липс Контур 0,6ml, контурная пластика","v":23000},{"b":"Belotero","c":"","p":"Белотеро Липс Шейп 0,6ml, контурная пластика","v":24000},{"b":"Belotero","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Белотеро Липс Контур/Belotero Lip","v":24000},{"b":"Belotero","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Белотеро Липс Шэйп/Belotero Lips","v":24000},{"b":"Belotero","c":"","p":"A11.01.012 Введение искусственных наполнителей в мягкие ткани Белотеро Ревайв/Belotero Revive 1 шприц 1.0мл","v":26000},{"b":"Belotero","c":"","p":"Введение искусственного имплантата Belotero Revive (Белотеро Ревайв) в мягкие ткани (1 мл)","v":24000},{"b":"Belotero","c":"","p":"Введение искусственного имплантата Belotero Soft (Белотеро Софт) в мягкие ткани с целью коррекции формы (1 мл)","v":28900},{"b":"Belotero","c":"","p":"Введение искусственного имплантата Belotero Balance (Белотеро Баланс) в мягкие ткани с целью коррекции формы (1 мл)","v":29900},{"b":"Belotero","c":"","p":"А16.01.026 BELOTERO Balance (1мл)Внутридермальное введение лекарственных препаратов","v":19000},{"b":"Belotero","c":"","p":"А 16.01.026 BELOTERO Lips Contour (0,6мл)Внутридермальное введение лекарственных препаратов","v":22000},{"b":"Belotero","c":"","p":"А16.01.026 BELOTERO Lips Shape (0,6мл)Внутридермальное введение лекарственных препаратов","v":22000},{"b":"Belotero","c":"","p":"Контурная пластика Belotero (1 шприц, 0,6мл)","v":26000},{"b":"Belotero","c":"","p":"Бланширование Belotero Soft","v":33000},{"b":"Belotero","c":"","p":"Белотеро Липс Шэйп 0,6 мл.","v":21850},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Белотеро софт/Belotero soft, 1 мл","v":18380},{"b":"Belotero","c":"","p":"Косметологическая контурная пластика \"Белотеро Софт с Лидокаином 1 мл.","v":18900},{"b":"Belotero","c":"","p":"Косметологическая контурная пластика губ Белотеро Липс Шейп 0,6 мл.(Швецария)","v":19500},{"b":"Belotero","c":"","p":"Косметологическая контурная пластика Белотеро Баланс 1 мл.(Швецария)","v":19900},{"b":"Belotero","c":"","p":"A11.01.013, B01.003.004.004 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: Belotero Soft с","v":23500},{"b":"Belotero","c":"","p":"A11.01.013, B01.003.004.004 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: Belotero Balance","v":24500},{"b":"Belotero","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: Belotero Volume с лидокаином, (Бе","v":31000},{"b":"Belotero","c":"","p":"Белотеро Софт (1 мл) Увеличение губ","v":18600},{"b":"Belotero","c":"","p":"Белотеро Софт (1мл) Носогубные складки","v":18600},{"b":"Belotero","c":"","p":"Белотеро Софт (1мл) Подбородок","v":18600},{"b":"Belotero","c":"","p":"Косметология: Belotero soft (1,0 мл)","v":22000},{"b":"Belotero","c":"","p":"Belotero Lips Contour Введение искусственных имплантатов в мягкие ткани 0,6 мл А11.01.012","v":23000},{"b":"Belotero","c":"","p":"Belotero Balance Введение искусственных имплантатов в мягкие ткани с целью коррекции формыА11.01.013","v":26000},{"b":"Belotero","c":"","p":"Belotero Soft Введение искусственных имплантатов в мягкие ткани 1мл А11.01.012","v":27600},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Белотеро Липс Контур с лидокаином 0,6 мл","v":17000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Белотеро Липс Шейп с лидокаином 0,6 мл","v":17000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Белотеро Софт 1 мл","v":21000},{"b":"Belotero","c":"","p":"Внутрикожное введение лекарственных препаратов Belotero Hydro","v":13000},{"b":"Belotero","c":"","p":"Внутрикожная контурная пластика Belotero balance без лидокаина 1 мл","v":16000},{"b":"Belotero","c":"","p":"Внутрикожная контурная пластика Belotero balance с лидокаином 1 мл","v":16500},{"b":"Belotero","c":"","p":"Контурная пластика Belotero soft- 1,0 мл","v":20500},{"b":"Belotero","c":"","p":"Контурная пластика Belotero Lips Contour- 0,6 мл","v":21500},{"b":"Belotero","c":"","p":"Контурная пластика Belotero balance- 1,0 мл","v":21500},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы(препарат Belotero Lips Contour) 0.6 мл","v":21500},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (препарат Belotero Soft с лидокоином) 1.0 мл","v":26300},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (препарат Belotero Soft) 1.0 мл","v":26300},{"b":"Belotero","c":"","p":"A11.01.012 Контурная пластика филлер Белотеро Липс Контур (Belotero Lips Contour)","v":22500},{"b":"Belotero","c":"","p":"A11.01.012 Контурная пластика филлер Белотеро Липс Шейп (Belotero Lips Shape)","v":22500},{"b":"Belotero","c":"","p":"A11.01.012 Контурная пластика филлер Белотеро Баланс (Belotero Balance)","v":23000},{"b":"Belotero","c":"","p":"Belotero Липс Контур 0,6 мл","v":18000},{"b":"Belotero","c":"","p":"Belotero Липс Контур","v":18500},{"b":"Belotero","c":"","p":"Belotero Липс Шейп 0,6 мл","v":19300},{"b":"Belotero","c":"","p":"Биоревитализация препаратом BELOTERO HYDRO, до 1 мл","v":17000},{"b":"Belotero","c":"","p":"Контурная пластика пепаратом Belotero Lips Contour до 0,6 мл","v":18700},{"b":"Belotero","c":"","p":"Контурная пластика пепаратом Belotero Lips Shape до 0,6 мл","v":18700},{"b":"Belotero","c":"","p":"Контурная пластика (Белотеро интенс)","v":24500},{"b":"Belotero","c":"","p":"Контурная пластика (Белотеро интенс с Лидокаином 1 мл)","v":28300},{"b":"Belotero","c":"","p":"Belotero Lips Shape Введение искусственных имплантатов в мягкие ткани 0,6 мл А11.01.012","v":23000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика препаратом Белотеро Липс К","v":27000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика препаратом Белотеро Липс Ш","v":27000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика препаратом Белотеро Вольюм","v":27600},{"b":"Belotero","c":"","p":"Филлер Belotero lips shape (Белотеро липс шейп) (0,6 мл)","v":22500},{"b":"Belotero","c":"","p":"Филлер Belotero lips contour (Белотеро липс контур) (0,6 мл)","v":23000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Белотеро Волюм 1,0 мл.","v":16500},{"b":"Belotero","c":"","p":"Belotero lips shape 0,6мл","v":25200},{"b":"Belotero","c":"","p":"Belotero soft lidocaine 1мл","v":25400},{"b":"Belotero","c":"","p":"Belotero balance Lidocaine 1мл","v":27100},{"b":"Belotero","c":"","p":"А11.01.013 Бланч-терапия (бланширование) Белотеро Баланс с лидокаином (Belotero Balance lido)","v":23500},{"b":"Belotero","c":"","p":"А11.01.013 Бланч-терапия (бланширование) Белотеро Софт с лидокаином (Belotero Soft lido)","v":23500},{"b":"Belotero","c":"","p":"А11.01.013 Контурная пластика носослезной борозды Belotero Soft (канюля включена в стоимость)","v":23900},{"b":"Belotero","c":"","p":"Введение искусственного импланта Белотеро Гидро 1мл","v":20000},{"b":"Belotero","c":"","p":"Белотеро Баланс Введение искусственных наполнителей в мягкие ткани 1 мл","v":25000},{"b":"Belotero","c":"","p":"Белотеро Липс Шейп Введение искусственных наполнителей в мягкие ткани 0,6мл","v":25000},{"b":"Belotero","c":"","p":"Белотеро Интенс с Лидокаином имплант для интрадермального применения","v":33000},{"b":"Belotero","c":"","p":"Белотеро Софт имплантант для интрадермального применения 1мл","v":33000},{"b":"Belotero","c":"","p":"Belotero LIPS CONTUR","v":18500},{"b":"Belotero","c":"","p":"Belotero LIPS SHAPE 0,6 ml","v":18500},{"b":"Belotero","c":"","p":"Belotero Revive 1 ml","v":19000},{"b":"Belotero","c":"","p":"Контурная пластика губ препарат Belotero Shape 0,6 ml","v":28000},{"b":"Belotero","c":"","p":"Контурная пластика подбородка Belotero Volume","v":36000},{"b":"Belotero","c":"","p":"Контурная пластика скул Belotero Volume","v":36000},{"b":"Belotero","c":"","p":"Belotero Revive (1 ml)","v":21000},{"b":"Belotero","c":"","p":"Belotero lips contour (0.6 ml)","v":24000},{"b":"Belotero","c":"","p":"Belotero lips shape(0.6 ml)","v":24000},{"b":"Belotero","c":"","p":"Введение искусственных имплантов в мягкие ткани препаратом Белотеро Ревайв, 1.0 мл","v":28800},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани препаратом Белотеро (Белотеро), 1.0 мл","v":32700},{"b":"Belotero","c":"","p":"Биоревитализация препаратом Belotero Hydro 1 мл А11.01.003","v":18900},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Lips Contour 0,6 мл A11.01.013","v":19500},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Lips Shape 0,6 мл A11.01.013","v":19500},{"b":"Belotero","c":"","p":"A16.07.022 Контурная пластика, Belotero Lips Shape, 0.6 мл","v":18000},{"b":"Belotero","c":"","p":"А16.07.022 Контурная пластика, Belotero Lips Contour, 0.6 мл","v":18000},{"b":"Belotero","c":"","p":"A16.07.022 Контурная пластика, Belotero Soft, 1 мл","v":20000},{"b":"Belotero","c":"","p":"Биоревитализация Belotero Hydro, 1 мл A11.01.012","v":20000},{"b":"Belotero","c":"","p":"Контурная пластика губ Belotero Lips Contur 0.6 мл А11.01.013","v":21500},{"b":"Belotero","c":"","p":"Контурная пластика лица Belotero Lips Contur 0.6 мл А11.01.013","v":21500},{"b":"Belotero","c":"","p":"Belotero Soft (1 мл)","v":19500},{"b":"Belotero","c":"","p":"Belotero Volume (1 мл)","v":22500},{"b":"Belotero","c":"","p":"Belotero Intence (1 мл)","v":24000},{"b":"Belotero","c":"","p":"Контурная и объемная пластика: Belotero Soft 1 мл","v":22000},{"b":"Belotero","c":"","p":"Контурная и объемная пластика: Belotero Soft с лидокаином 1 мл","v":25000},{"b":"Belotero","c":"","p":"Контурная и объемная пластика: Belotero Volume 1 мл","v":26000},{"b":"Belotero","c":"","p":"Биоревитализация Belotero hydro 1ml","v":15500},{"b":"Belotero","c":"","p":"Биоревитализация Belotero Revive 1 мл","v":19000},{"b":"Belotero","c":"","p":"Контурная пластика Belotero Lips Shape 0,6 ml","v":19500},{"b":"Belotero","c":"","p":"Косметология: Belotero Balance (1мл)","v":22000},{"b":"Belotero","c":"","p":"BELOTERO hydro","v":18000},{"b":"Belotero","c":"","p":"Belotero Lips Shape, 1 мл","v":21100},{"b":"Belotero","c":"","p":"Belotero Soft","v":24000},{"b":"Belotero","c":"","p":"Белотеро Липс Контур 0,6 мл/Belotero lips contour 0,6 ml","v":19000},{"b":"Belotero","c":"","p":"Белотеро липс шейп 0,6 мл/Belotero lips Shape 0,6 ml","v":19000},{"b":"Belotero","c":"","p":"ПУ A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Belotero Lips Contour (0,6 мл)","v":26000},{"b":"Belotero","c":"","p":"ПУ A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Belotero Lips Shape (0,6 мл)","v":26000},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Belotero Lips Contour (0,6 мл)","v":26400},{"b":"Belotero","c":"","p":"Биоревитализация кожи препаратом Belotero Hydro [ 1,0 мл.]","v":15500},{"b":"Belotero","c":"","p":"Контурная пластика лица препаратом Belotero Lips Contour [0,5 мл.]","v":18900},{"b":"Belotero","c":"","p":"Контурная пластика лица препаратом Belotero Lips Shape [0,6 мл.]","v":19900},{"b":"Belotero","c":"","p":"Контурная пластика губ препаратом Belotero Lips Countur /Германия/ (0,6 ml)","v":23000},{"b":"Belotero","c":"","p":"Контурная пластика губ препаратом Belotero Lips Shape /Германия/ (0,6 ml)","v":23000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Revive /Германия/ ( 1ml)","v":25000},{"b":"Belotero","c":"","p":"Увеличение губ Belotero (Швейцария)-1 ml","v":17000},{"b":"Belotero","c":"","p":"Belotero","v":20000},{"b":"Belotero","c":"","p":"БЕЛОТЕРО СОФТ Контурная пластика препаратом \"Белотеро Софт\" 1 мл (A11.01.013)","v":24300},{"b":"Belotero","c":"","p":"Белотеро Контур 0,6 мл Введение искусственного импланта в мягкие ткани","v":18500},{"b":"Belotero","c":"","p":"Белотеро Липс Шейп 0,6 мл Введение искусственного импланта в мягкие ткани","v":18500},{"b":"Belotero","c":"","p":"Контурная пластика (препарат Белотеро софт 1.0 мл)","v":18500},{"b":"Belotero","c":"","p":"Belotero Soft 1 мл. ( бланширование)","v":23500},{"b":"Belotero","c":"","p":"Коррекция \"Колец Венеры\" Belotero soft 1,0 мл.","v":15200},{"b":"Belotero","c":"","p":"Коррекция морщин лба Belotero soft 1,0 мл.","v":15200},{"b":"Belotero","c":"","p":"Коррекция периоральных (кисетных) морщин лба Belotero soft 1,0 мл.","v":15200},{"b":"Belotero","c":"","p":"Введение Белотеро Ревайв 1 мл имплант с вязкоупругими свойствами на основе перекрестно-сшитого гиалуроната натрия для ув","v":22000},{"b":"Belotero","c":"","p":"Введение Белотеро Липс Контур 0.6 мл имплант с вязкоупругими свойствами на основе перекрестносшитого гиалуроната натрия","v":24000},{"b":"Belotero","c":"","p":"Введение Белотеро Липс Шейп 0,6 мл имплант с вязкоупругими свойствами на основе перекрестносшитого гиалуроната натрия дл","v":24000},{"b":"Belotero","c":"","p":"Инъекция препаратом - Belotero Hydro 1 мл","v":15000},{"b":"Belotero","c":"","p":"Belotero Lips Shape","v":18000},{"b":"Belotero","c":"","p":"Belotero soft","v":18000},{"b":"Belotero","c":"","p":"Belotero HYDRO","v":17500},{"b":"Belotero","c":"","p":"Belotero Balance (1 ml)","v":20000},{"b":"Belotero","c":"","p":"Belotero Soft (1 ml)","v":21000},{"b":"Belotero","c":"","p":"Belotero Shape (0,6ml)","v":20500},{"b":"Belotero","c":"","p":"Belotero Soft (1ml)","v":23500},{"b":"Belotero","c":"","p":"Ревитализация BELOTERO Revive (1ml)","v":23500},{"b":"Belotero","c":"","p":"Инъекционная косметология БЕЛОТЕРО ГИДРО","v":23000},{"b":"Belotero","c":"","p":"Инъекционная косметология БЕЛОТЕРО ЛИПС КОНТУР","v":25500},{"b":"Belotero","c":"","p":"Инъекционная косметология БЕЛОТЕРО ЛИПС ШЕЙП","v":25500},{"b":"Belotero","c":"","p":"Belotero Hydro (белотеро хидро) 1 мл","v":19000},{"b":"Belotero","c":"","p":"Belotero Soft (белотеро софт) 1 мл","v":21500},{"b":"Belotero","c":"","p":"Belotero Balance (белотеро баланс) 1 мл","v":22000},{"b":"Belotero","c":"","p":"А11.01.012 Введение искусственных имплантов в мягкие тканиБЕЛОТЕРО\"BELOTERO LIPS CONTUR (0.6мл)","v":22000},{"b":"Belotero","c":"","p":"А11.01.012 Введение искусственных имплантатов в мягкие ткани. Белотеро Липс Контур (Belotero Lips Contour), 0,6 мл","v":24000},{"b":"Belotero","c":"","p":"А11.01.012 Введение искусственных имплантатов в мягкие ткани. Белотеро Липс Шейп, 0,6 мл.","v":26000},{"b":"Belotero","c":"","p":"Белотеро Софт (BELOTERO SOFT) имплантат для интрадермального применения, 1мл","v":6968},{"b":"Belotero","c":"","p":"A11.01.012 Контурная пластика (введение искусственных имплантатов в мягкие ткани) Belotero lips shape ( Белотеро липс ше","v":16500},{"b":"Belotero","c":"","p":"Belotero Soft 1 мл","v":19750},{"b":"Belotero","c":"","p":"Belotero Lips Contour 0,6 ml","v":20100},{"b":"Belotero","c":"","p":"Belotero Lips Shape 0,6 ml","v":20900},{"b":"Belotero","c":"","p":"Belotero Lips Contour 0.6 ml","v":17000},{"b":"Belotero","c":"","p":"Belotero Lips Shape 0.6 ml","v":17000},{"b":"Belotero","c":"","p":"Belotero Soft 1.0 ml","v":20000},{"b":"Belotero","c":"","p":"Введение искусственных имплантов в мягкие ткани Белотеро ГИДРО, 1 мл","v":16900},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Belotero Lips Контур","v":20900},{"b":"Belotero","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Belotero Lips Шэйп","v":20900},{"b":"Belotero","c":"","p":"Контурная пластика Белотеро Гидро (Belotero Hydro), 1,0 мл","v":19500},{"b":"Belotero","c":"","p":"Контурная пластика Белотеро Ревайв (Belotero Revive), 1,0 мл","v":21000},{"b":"Belotero","c":"","p":"Контурная пластика Белотеро Волюм (Belotero Volume), 1,0 мл","v":27750},{"b":"Belotero","c":"","p":"Контурная пластика лица: BELOTERO SOFT 1мл","v":17800},{"b":"Belotero","c":"","p":"Контурная пластика лица: BELOTERO BALANS 1мл","v":18900},{"b":"Belotero","c":"","p":"Подкожное введение лекарственных препаратов. Belotero Lips Contour с лидокаином (0,6 мл)","v":25000},{"b":"Belotero","c":"","p":"Подкожное введение лекарственных препаратов. Belotero Lips Shape с лидокаином (0,6 мл)","v":28000},{"b":"Belotero","c":"","p":"Подкожное введение лекарственных препаратов. Belotero soft Lido (1 мл)","v":33000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Hydro 1 мл","v":21000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Balance 1 мл","v":22000},{"b":"Belotero","c":"","p":"Контурная пластика препаратом Belotero Balance с лидокаином 1 мл","v":24500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm ultra smile 0,55 ml","v":17500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm ultra 3( Юведерм 3) 1 ml","v":21500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурное моделирование филлер 0,6 мл Juvederm Ultra Smile (1 шприц)","v":29700},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурное моделирование филлер 1 мл Juvederm 3 (1 шприц)","v":30800},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra Smile 2, до 0.6 мл.","v":24000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra 3, до 1 мл.","v":29000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом JUVIDERM ULTRA SMILE","v":22000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм смайл (0,55мл) Носогубные складки","v":18100},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм смайл (0,55мл) Побородок","v":18100},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм смайл (0,55мл) Скулы","v":18100},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Juviderm ultra 3,2 1 мл","v":23300},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоревитализация Juvederm Volite, 1 мл","v":25500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Филлер Ювидерм ультра смайл (Juvederm Ultra smile), 0,5 мл-Контурная пластика губ","v":25000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Филлер Ювидерм ультра 3 (Juvederm Ultra 3), 1мл - Контурная пластика губ","v":28500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Филлер Ювидерм ультра 3 (Juvederm Ultra 3), 1мл - Контурная пластика носогубных складок","v":28500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм Ультра 2 0.55 ml, контурная пластика","v":16500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм smile 0.55 ml, контурная пластика","v":26500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Ювидерм Ультра 3 0,8 ml, контурная пластика","v":27000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Ультра Смайл/Juvederm Ult","v":28000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Ультра 3/Juvederm Ultra 3","v":36000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Волюма/ Juvederm Voluma 1","v":40000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственного имплантата Juvederm Smile (Ювидерм Смайл) в мягкие ткани с целью коррекции формы (0.55 мл)","v":29000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственного имплантата Juvederm Ultra 3 (Ювидерм Ультра 3) в мягкие ткани с целью коррекции формы (1 мл)","v":34000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"А11.02.002 JUVEDERM HYDRATE (1 ml) Внутримышечное введение лекарственного препарата","v":10000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"А16.01.026 JUVEDERM ULTRA 2 (0.55 ml), Внутридермальное введение лекарственных препаратов","v":22000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"А16.01.026 Juvederm VOLUX, Внутридермальное введение лекарственных препаратов","v":23000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Ювидеррм ультра смайл/Juvederm ULTRA Smile, 0","v":20480},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra SMILE 0.55 мл Введение имплантатов в мягкие ткани с целью коррекции формы А11.01.013","v":23000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra3 Введение искусственных имплантатов в мягкие ткани с целью коррекции формы А11.01.013","v":28500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm VOLUMA с лидокаином Введение имплантатов в мягкие ткани 1 мл.","v":39500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Ультра 2 (Juvederm) 0,55 мл","v":19900},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Ультра 3 (Juvederm) 1,0 мл","v":25000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Ювидерм Ультра 4 (Juvederm) 1,0 мл","v":27000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Juvederm Volift 1,0 мл","v":42000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Juvederm Volux 1,0 мл","v":42000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Контурная пластика филлер Ювидерм Смайл (Juvederm SMILE) 0,5 мл","v":26000},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra Smile (до 0,5 мл)","v":23500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Volift","v":27800},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Juvederm Ultra 3 (до 1,0 мл)","v":30500},{"b":"Juvederm","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Juvederm (Ювидерм смайл-0.6 мл)","v":17000},{"b":"Juvederm","c":"","p":"Juvederm Ultra SMILE 0.55 мл Введение имплантатов в мягкие ткани с целью коррекции формы А11.01.013","v":23000},{"b":"Juvederm","c":"","p":"Juvederm VOLUMA с лидокаином Введение имплантатов в мягкие ткани 1 мл.","v":39500},{"b":"Juvederm","c":"","p":"Введение искусственных имплантов в мягкие ткани препаратом Ювидерм Волайт, 1.0 мл","v":35000},{"b":"Juvederm","c":"","p":"Филлер Ювидерм ультра смайл (Juvederm Ultra smile), 0,5 мл-Контурная пластика губ","v":25000},{"b":"Juvederm","c":"","p":"Филлер Ювидерм ультра 3 (Juvederm Ultra 3), 1мл - Контурная пластика губ","v":28500},{"b":"Juvederm","c":"","p":"Филлер Ювидерм ультра 3 (Juvederm Ultra 3), 1мл - Контурная пластика носогубных складок","v":28500},{"b":"Juvederm","c":"","p":"Контурная пластика Juvederm Volift 1,0 мл","v":42000},{"b":"Juvederm","c":"","p":"Контурная пластика Juvederm Volux 1,0 мл","v":42000},{"b":"Juvederm","c":"","p":"Увеличение губ Juvederm","v":18000},{"b":"Juvederm","c":"","p":"Juvederm ultra 3","v":17000},{"b":"Juvederm","c":"","p":"Juvederm ultra 4","v":17500},{"b":"Juvederm","c":"","p":"Juvederm ultra smile (0.55 ml)","v":27500},{"b":"Juvederm","c":"","p":"Juvederm Hydrate (1 мл).(.введение искусственных наполнителей в мягкие ткани с целью коррекции формы)","v":23000},{"b":"Juvederm","c":"","p":"Juvederm Ultra Smile (0,55 мл) .(.введение искусственных наполнителей в мягкие ткани с целью коррекции формы)","v":29000},{"b":"Juvederm","c":"","p":"Juvederm Ultra 3 (1 мл).(.введение искусственных наполнителей в мягкие ткани с целью коррекции формы)","v":30000},{"b":"Juvederm","c":"","p":"Контурная пластика лица Juviderm Ultra Smile 0.55 мл А11.01.013","v":23000},{"b":"Juvederm","c":"","p":"Контурная и объемная пластика: Juvederm Ultra Smile 0,6 мл","v":24000},{"b":"Juvederm","c":"","p":"Контурная и объемная пластика: Juvederm Ultra 3 1 мл","v":25000},{"b":"Juvederm","c":"","p":"Контурная и объемная пластика: Juvederm Ultra 4 1 мл","v":26500},{"b":"Juvederm","c":"","p":"Контурная пластика Juvederm Smile 0,55 ml","v":22000},{"b":"Juvederm","c":"","p":"Контурная пластика Juvederm Ultra 3 - 1ml","v":30000},{"b":"Juvederm","c":"","p":"Контурная пластика Juvederm Ultra 4 1ml","v":31000},{"b":"Juvederm","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Ювидерм Волифт Ретач / Juvederm VOLIFT Retouc","v":24200},{"b":"Juvederm","c":"","p":"ПУ A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Ювидерм Ультра Cмайл / Juvederm","v":28000},{"b":"Juvederm","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Ювидерм Ультра Cмайл / Juvederm ULTRA Smile (","v":30000},{"b":"Juvederm","c":"","p":"Ювидерм ульта3 1,0 мл Введение искусственного импланта в мягкие ткани на основе стабилизированной гиалуроновой кислоты","v":29500},{"b":"Juvederm","c":"","p":"Ювидерм Волюма 1,0 мл Введение искусственного импланта в мягкие ткани на основе стабилизированной гиалуроновой кислоты","v":35100},{"b":"Juvederm","c":"","p":"Введение Ювидерм Волифт 1 мл имплант внутридермальный","v":25000},{"b":"Juvederm","c":"","p":"Введение Ювидерм Волайт 1 мл имплант внутридермальный","v":26500},{"b":"Juvederm","c":"","p":"Введение Ювидерм Ультра Смайл 0.55 мл имплант внутридермальный","v":27000},{"b":"Juvederm","c":"","p":"Ювидерм Ультра Смайл 0,55 мл/Juvederm Ultra Smile","v":25000},{"b":"Juvederm","c":"","p":"Ювидерм Ультра 3/Juvederm Ultra 3","v":28000},{"b":"Juvederm","c":"","p":"Коллагеновый 3D - матрикс BioPlate (15*20 mm)","v":12200},{"b":"Juvederm","c":"","p":"Биоревитализация Viscoderm skinko E 2,5 мл (1 час 10 мин)","v":17600},{"b":"Juvederm","c":"","p":"Биоревитализация Nctf 135 HA 3 мл (1 час 10 мин)","v":18700},{"b":"Restylane","c":"","p":"Restylane Kiss Введение искусственных имплантатов в мягкие ткани 1 мл А11.01.012","v":35000},{"b":"Restylane","c":"","p":"Ботулинотерапия:Диспорт 1 ЕД (первичный прием 1 час, осмотр/вторичный 30 минут)","v":209},{"b":"Restylane","c":"","p":"Ботулинотерапия:Релатокс 1 ЕД (первичный прием 1 час, осмотр/вторичный 30 минут)","v":440},{"b":"Restylane","c":"","p":"Ботулинотерапия: Ксеомин 1 ЕД (первичный прием 1 час, осмотр/вторичный 30 минут)","v":462},{"b":"Restylane","c":"","p":"Restylane (рестилайн) 1 мл","v":16500},{"b":"Restylane","c":"","p":"Внутрикожная контурная пластика Restylane Kysse, 1 мл","v":36000},{"b":"Restylane","c":"","p":"Омоложение кожи методом биоревитализации Restylane-Vital (Рестилайн-Витал) - 1,1 мл","v":21000},{"b":"Restylane","c":"","p":"Контурная пластика лица препаратом Restilain Lidocaine (Рестилайн Лидокаин) - 1,0 мл","v":31000},{"b":"Restylane","c":"","p":"Контурная пластика скул, подбородка, челюстной зоны Restylane LYFT (Рестилайн ЛИФТ) - 1,0 мл","v":32000},{"b":"Restylane","c":"","p":"Контурная пластика Рестилайн, 0,5 мл","v":13750},{"b":"Restylane","c":"","p":"Контурная пластика Рестилайн Лип (Restyline Lipp), 0,5 мл","v":15500},{"b":"Restylane","c":"","p":"Контурная пластика Рестилайн Витал Лайт (Restylаne Vital Light) с лидокаином, 1,0 мл","v":17000},{"b":"Restylane","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Рестилайн (Restylane Vita lLight ) в объеме 1","v":14850},{"b":"Restylane","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Рестилайн (Restylane Vita lLight Injector) в","v":22550},{"b":"Restylane","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Рестилайн (Restylane Vital) в объеме 1 мл","v":23100},{"b":"Restylane","c":"","p":"Внутрикожное введение лекарственных препаратов. Restylane Vital (1 мл)","v":25300},{"b":"Restylane","c":"","p":"Контурная пластика Рестилайн 1мл","v":26000},{"b":"Restylane","c":"","p":"Restylane (1 мл)","v":30000},{"b":"Restylane","c":"","p":"Инъекции Restylane Vital Light - 1,0 ml","v":11000},{"b":"Restylane","c":"","p":"Внутрикожное введение лекарственных препаратов, Рестилайн Витал 1 мл","v":26300},{"b":"Restylane","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы, Рестилайн 1 мл","v":35350},{"b":"Restylane","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы, Рестилайн лифт, 1 мл","v":37650},{"b":"Restylane","c":"","p":"Внутрикожная контурная пластика (Рестилайн Витал Лайт 1мл)","v":15900},{"b":"Restylane","c":"","p":"Внутрикожная контурная пластика (Рестилайн Лип Вольюм 1 мл)","v":22560},{"b":"Restylane","c":"","p":"Внутрикожная контурная пластика (Рестилайн 1 мл)","v":22750},{"b":"Restylane","c":"","p":"ИНЪЕКЦИОННАЯ КОСМЕТОЛОГИЯ : Контурная пластика. Препараты :Restylane ,Juvederm,Belotero,Radiesse.","v":29000},{"b":"Restylane","c":"","p":"Коррекция инволюционных изменений филлерами на основе гиалуроновой кислоты: Рестилайн, Рестилайн Перлайн, Рестилайн Вита","v":15500},{"b":"Restylane","c":"","p":"Биоревитализация Restylane vital 1.0 мл","v":16500},{"b":"Restylane","c":"","p":"Коррекция контура и объема губ \"Restylane\"","v":21700},{"b":"Restylane","c":"","p":"Коррекция носогубных складок\"Restylane\"","v":21700},{"b":"Restylane","c":"","p":"Коррекция контура и объема губ \"Restylane perlane\"","v":24200},{"b":"Restylane","c":"","p":"Контурная пластика Restylane Touch 0,5","v":12590},{"b":"Restylane","c":"","p":"Биоревитализация Restylane Vital Light 1,0","v":13290},{"b":"Restylane","c":"","p":"Контурная пластика Restylane 0,5","v":15690},{"b":"Restylane","c":"","p":"Контурная пластика препаратом Restylane LIPP","v":18700},{"b":"Restylane","c":"","p":"Контурная пластика препаратом Restylane","v":19800},{"b":"Restylane","c":"","p":"Контурная пластика препаратом Restylane Lidocaine","v":19800},{"b":"Restylane","c":"","p":"Контурная пластика Restylane Lido 0,5 ml","v":20900},{"b":"Restylane","c":"","p":"Контурная пластика Restylane Vital light 1 ml.","v":21670},{"b":"Restylane","c":"","p":"Контурная пластика Restylane 0.5ml","v":22770},{"b":"Restylane","c":"","p":"А11.01.012.033 Биоревитализация Рестилайн Витал (Restylane Vital), 1 мл","v":25000},{"b":"Restylane","c":"","p":"А11.01.013.021 Рестилайн Витал (Restylane Vital), 1 мл","v":31150},{"b":"Restylane","c":"","p":"А11.01.013.022 Рестилайн Лифт (Restylane LYFT ), 1 мл","v":38500},{"b":"Restylane","c":"","p":"Биоревитализация препаратом Restylan Vital Light (1 мл)","v":23500},{"b":"Restylane","c":"","p":"Биоревитализация препаратом Restylan Vital Light (2мл)","v":45000},{"b":"Restylane","c":"","p":"Контурная пластика препаратом Restylane Lyft 1,0мл","v":21000},{"b":"Restylane","c":"","p":"Инъекции Restylane Touch - 0,5 мл","v":9000},{"b":"Restylane","c":"","p":"Инъекции Restylane Lipp - 1 мл","v":15000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"А11.02.002 Контурная пластика Заполнение носослезной борозды Теосиаль реденсити 2","v":20000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Teosyal Pure Sense Redensity II, 1 мл","v":30000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Филлер Teosyal Redensity 1 мл","v":26000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Teosyal Ultra Deep","v":31500},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"А16.01.026 TEOSYAL RHA 1,Внутридермальное введение лекарственных препаратов","v":18000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"А16.01.026 TEOSYAL RHA 2 , Внутридермальное введение лекарственных препаратов","v":22000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"А16.01.026 TEOSYAL RHA 3, Внутридермальное введение лекарственных препаратов","v":24000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Теосиаль (Teosyal PureSense Redensity I) /Швейцария/ (1 ml)","v":23000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Теосиаль Teosyal PureSense Redensity I 1,0 ml","v":23000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Теосиаль (Teosyal RHA KISS) /Швейцария/ (0,7 ml)","v":24200},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение лекарственных препаратов Теосиаль Реденсити/Teosyal Redensity, 1 мл","v":14700},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Теосиаль Реденсити/Teosyal Redensity 2, 1 мл","v":17850},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение лекарственных препаратов. Teosyal PureSense Redensity I 1 мл","v":15900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение лекарственных препаратов. Teosyal PureSense Redensity II 1 мл","v":18900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Теосиаль Кис (Teosyal Kiss) 1 мл.","v":25000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (препарат Teosyal Redencity 2) 1.0 мл","v":35750},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Teosyal PURESENSE KISS, до 1 мл","v":30000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных имплантов в мягкие ткани препаратом Теосайл Реденсити II /Teosyal Redensity II 1 ml","v":39375},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Коррекция носослезной борозды Teosyal Redensity 2 (Швейцария) 1 мл","v":18000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Teosyal Redensity /Швейцария/ (2,0 ml )","v":35000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение Теосиаль RHA2 имплант вязко-эластичный внутрикожный","v":32000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение Теосиаль RHA3 имплант вязко-эластичный внутрикожный","v":33000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение Теосиаль PureSense Redensity 2 имплант вязко-эластичный внутрикожный","v":35000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Теосиаль/Teosyal PureSense Redensity 2, 1 ml №2","v":30000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом- TEOSYAL RHA KISS 0,7 мл.-введение искусственных имплантатов в мягкие ткани с целью коррек","v":25500},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом- TEOSYAL RHA1 1 мл.-введение искусственных имплантатов в мягкие ткани с целью коррекции фо","v":27900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом- TEOSYAL RHA 2 1 мл.-введение искусственных имплантатов в мягкие ткани с целью коррекции ф","v":29300},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Teosyal Redensity 2 носослезная борозда","v":23000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Teosyal RHA 1","v":19900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Teosyal RHA 2","v":21900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Teosyal RHA 3","v":21900},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль RHA KISS, 0,7 мл","v":22000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль РЕДЕНСИТИ 1, 1,0 мл","v":22000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль RHA 2, 1,0 мл","v":25000},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом TEOSYAL Ultra Deep 1,2 мл.","v":15600},{"b":"Teosyal","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом TEOSYAL PureSense Redensity 2 1 мл.","v":29600},{"b":"Teosyal","c":"","p":"Контурная пластика препаратом TEOSYAL Ultra Deep 1,2 мл.","v":15600},{"b":"Teosyal","c":"","p":"Контурная пластика препаратом TEOSYAL PureSense Redensity 2 1 мл.","v":29600},{"b":"Teosyal","c":"","p":"Введение искусственных наполнителей в мягкие ткани для формы (Teosyal Redensity-2 1 мл)","v":153000},{"b":"Teosyal","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Сглаживание глубоких морщин (стат","v":10800},{"b":"Teosyal","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Заполнение носослезной борозды пр","v":11800},{"b":"Teosyal","c":"","p":"A11.01.013 Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Устранение поверхностных морщин (","v":11800},{"b":"Teosyal","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы, TEOSYAL PERESENSE REDENSITY II (Теосиаль Ред","v":30500},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense Redensity 1 (1 ml) 1 шприц","v":23000},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense Redensity 1 (3 ml) 1 шприц","v":44000},{"b":"Teosyal","c":"","p":"Внутрикожное введение лекарственных препаратов. Биоревитализация препаратом \"Teosyal PureSense Redensity\"(1 мл)","v":18100},{"b":"Teosyal","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы имплантатом вязко-эластичным внутрикожным TEO","v":22900},{"b":"Teosyal","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы препаратом \"Teosyal RHA 1\"","v":25400},{"b":"Teosyal","c":"","p":"Teosyal Redensity 2, 1 мл (Коррекция носослезных борозд)","v":27000},{"b":"Teosyal","c":"","p":"Контурная пластика губ Teosyal RHA KISS","v":33000},{"b":"Teosyal","c":"","p":"Коррекция носослезных борозд - Teosyal Redensity 2, 1 мл (врач Омарова З.К.)","v":35000},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense REDENSITY 1 1,0 мл Введение искусственных наполнителей в мягкие ткани препаратом","v":22800},{"b":"Teosyal","c":"","p":"TEOSYAL RHA KISS 0,7 мл Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика","v":27100},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense DEEP LINES 1,0 мл Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная","v":30800},{"b":"Teosyal","c":"","p":"Введение искусственных имплантатов в мягкие ткани. Teosyal RHA (1 мл)","v":27000},{"b":"Teosyal","c":"","p":"Введение искусственных имплантатов в мягкие ткани. Teosyal PureSense Redensity (1 мл)","v":32000},{"b":"Teosyal","c":"","p":"16112 Внутрикожное введение искусственных имплантатов в мягкие ткани (Theosyal RHA Kiss 0.7мл)","v":22000},{"b":"Teosyal","c":"","p":"16113 Внутрикожное введение искусственных имплантатов в мягкие ткани (Teosyal RHA 4 1,2 мл))_","v":25000},{"b":"Teosyal","c":"","p":"16114 Внутрикожное введение искусственных имплантатов в мягкие ткани (Teosyal Ultra Deep (1.2 мл))","v":25000},{"b":"Teosyal","c":"","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль RHA KISS, 0,7 мл","v":22000},{"b":"Teosyal","c":"","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль РЕДЕНСИТИ 1, 1,0 мл","v":22000},{"b":"Teosyal","c":"","p":"Внутрикожное введение вязко-эластичного имплантата гиалуроновой к-ты Теосиаль RHA 2, 1,0 мл","v":25000},{"b":"Teosyal","c":"","p":"Введение препарата Teosyal PureSense Redensity - 2, 1 ml","v":25000},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense Redensity II, 1,0 мл.","v":15390},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense Global Action, 1,0 мл.","v":19390},{"b":"Teosyal","c":"","p":"TEOSYAL PureSense Kiss, 1,0 мл.","v":22890},{"b":"Teosyal","c":"","p":"Коррекция носослезной борозды препаратом Teosyal Redensity 2 1,0ml","v":20100},{"b":"Radiesse","c":"Косметология «Доклазер»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - инъекционная контурная пластика лица препар","v":33000},{"b":"Radiesse","c":"Косметология «Доклазер»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - инъекционная контурная пластика лица препар","v":59000},{"b":"Radiesse","c":"«Медицинский центр Елены Малышевой»","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы - RADIESSE (США) 1,5 мл, 30% Гидроксиаппатит","v":54900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse (Радиесс) 1,5 ml A11.01.012","v":25000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse (Радиесс) 3,0 ml A11.01.012","v":46000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"RADIESSE, до 1.5 мл.","v":33900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"RADIESSE, до 3 мл.","v":53900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"RADIESSE, до 4.5 мл.","v":73900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Radiesse 1.5 мл","v":36000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.013 Radiesse 3.0 мл","v":62000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Радиес (Radiess) 1,5 мл.","v":42900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Радиес (Radiess) с лидокаином 1,5 мл.","v":42900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика Радиес (Radiess) 3,0 мл.","v":80100},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом RADIESSE (Радиесс) 1,5 мл","v":30000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом RADIESSE (Радиесс) 3 мл","v":55000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Радиесс (RADIESSE) 1,5 мл.","v":39500},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Радиесс (RADIESSE) 3 мл.","v":65900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Радиес 1,5 мл","v":34700},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Радиес 3мл","v":47400},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции форм (Rediess 1,5 ml)","v":31000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: RADIESSE, 1,5 мл","v":35000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы: RADIESSE,3,0 мл","v":57000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 1,5 мл 1 шприц","v":36500},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 3,0 мл 1 шприц","v":52000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Введение искусственных имплантатов в мягкие ткани Radiesse, 1*1.5 мл","v":32000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Введение искусственных имплантатов в мягкие ткани Radiesse, 1*3 мл","v":59000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Введение искусственных имплантатов в мягкие ткани Radiesse, 3*3 мл","v":119700},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Radiesse (до 1,5 мл)","v":44900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Контурная пластика препаратом Radiesse (до 3,0 мл)","v":79900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Векторный лифтинг - Радиесс (Radiesse) 1,5 мл","v":38500},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Векторный лифтинг - Радиесс Лидокаин (Radiesse Lidocaine) 1,5 мл","v":39500},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Векторный лифтинг - Радиесс (Radiesse) 3 мл","v":64000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse / Радиесс 1,5мл. Контурная пластика A16.07.022","v":36800},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse / Радиесс 3мл. Контурная пластика A16.07.022","v":69900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Радиесc 1.5 мл. / Radiesse 1.5 ml. (услуга)","v":40900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Радиесc 1.5 мл. / Radiesse 1.5 ml. с лидокаином (услуга)","v":40900},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Радиесc 3.0 мл. / Radiesse 3.0 ml. (услуга)","v":66500},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Биоармирование гидроксиаппатитом кальция (Радиес) 3 мл","v":56000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 1,5 мл","v":34000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 3 мл","v":56000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 1.5 мл, контурная пластика","v":38000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"Radiesse 3 мл, контурная пластика","v":65000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Введение искусственного импланта Радиес/RADIESSE 1,5 мл в мягкие ткани","v":45000},{"b":"Radiesse","c":"Клиника «Мезомедика» (Mesomedica)","p":"A11.01.012 Введение искусственного импланта Радиес/RADIESSE 3,0 мл в мягкие ткани","v":72000},{"b":"Radiesse","c":"","p":"A11.01.012 Введение искусственного импланта Радиес/RADIESSE 1,5 мл в мягкие ткани","v":45000},{"b":"Radiesse","c":"","p":"A11.01.012 Введение искусственного импланта Радиес/RADIESSE 3,0 мл в мягкие ткани","v":72000},{"b":"Radiesse","c":"","p":"Введение искусственного имплантата Radiesse (Радиес) в мягкие ткани с целью коррекции формы (1.5 мл)","v":45000},{"b":"Radiesse","c":"","p":"Введение искусственного имплантата Radiesse (Радиес) в мягкие ткани с целью коррекции формы (3 мл)","v":75000},{"b":"Radiesse","c":"","p":"А11.01.002 RADIESSE (1,5мл)ПОДКОЖНОЕ ВВЕДЕНИЕ ЛЕКАРСТВЕННЫХ ПРЕПАРАТОВ","v":38000},{"b":"Radiesse","c":"","p":"А11.01.002 RADIESSE (3,0мл)ПОДКОЖНОЕ ВВЕДЕНИЕ ЛЕКАРСТВЕННЫХ ПРЕПАРАТОВ","v":63000},{"b":"Radiesse","c":"","p":"Радиес (Radiesse) /Германия/ (1,5 ml)","v":37600},{"b":"Radiesse","c":"","p":"Радиесс (Radiesse) /Германия/ (3,0 ml)","v":62000},{"b":"Radiesse","c":"","p":"Радиес 1,5 мл","v":35650},{"b":"Radiesse","c":"","p":"Радиес 3 мл","v":60950},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Радиес/Radiesse, 0,8 мл","v":19980},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Радиес/Radiesse, 1,5 мл","v":31500},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Радиес/Radiesse, 3 мл","v":61950},{"b":"Radiesse","c":"","p":"Радиес 1,5 мл","v":34700},{"b":"Radiesse","c":"","p":"Радиес 3мл","v":47400},{"b":"Radiesse","c":"","p":"RADIESSE 1,5 Введение искусственных имплантатов в мягкие ткани 1,5 мл. А11.01.013","v":34500},{"b":"Radiesse","c":"","p":"RADIESSE 3 мл. Введение искусственных имплантатов в мягкие ткани 3 мл. А11.01.013","v":63300},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Radiess 1,5 мл","v":32000},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Radiess 3,0 мл","v":49000},{"b":"Radiesse","c":"","p":"Внутрикожная контурная пластика Radiesse 1,5 мл","v":26000},{"b":"Radiesse","c":"","p":"Внутрикожная контурная пластика Radiesse 3,0 мл","v":44000},{"b":"Radiesse","c":"","p":"Контурная пластика Radiesse с лидокаином, 1,5 мл","v":42000},{"b":"Radiesse","c":"","p":"Контурная пластика Radiesse- 1,5 мл","v":42000},{"b":"Radiesse","c":"","p":"Контурная пластика Radiesse- 3,0 мл","v":82000},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (препарат Radiesse) 1.5 мл","v":35500},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы (препарат Radiesse) 3.0 мл","v":65000},{"b":"Radiesse","c":"","p":"A11.01.012 Контурная пластика Радиесс (Radiesse) - 1,5 мл","v":33000},{"b":"Radiesse","c":"","p":"A11.01.012 Контурная пластика Радиесс (Radiesse) - 3 мл","v":59000},{"b":"Radiesse","c":"","p":"Коллагеностимуляция RADIESSE","v":38500},{"b":"Radiesse","c":"","p":"Введение искусственного импланат Radiesse до 1,5 мл в мягкие ткани","v":40000},{"b":"Radiesse","c":"","p":"Введение искусственного импланат Radiesse до 3,0 мл в мягкие ткани","v":70000},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика препаратом препаратом Ради","v":44000},{"b":"Radiesse","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы Контурная пластика препаратом препаратом Ради","v":72300},{"b":"Radiesse","c":"","p":"Векторный лифтинг - Радиесс (Radiesse) 1,5 мл","v":38500},{"b":"Radiesse","c":"","p":"Векторный лифтинг - Радиесс Лидокаин (Radiesse Lidocaine) 1,5 мл","v":39500},{"b":"Radiesse","c":"","p":"Векторный лифтинг - Радиесс (Radiesse) 3 мл","v":64000},{"b":"Radiesse","c":"","p":"Radiesse 1,5мл","v":33000},{"b":"Radiesse","c":"","p":"Radiesse 3мл","v":55000},{"b":"Radiesse","c":"","p":"A11.01.013 Векторный лифтинг Радиесс (Radiesse) 1,5мл, Германия","v":34900},{"b":"Radiesse","c":"","p":"A11.01.013 Векторный лифтинг Радиесс (Radiesse) 3мл, Германия","v":54900},{"b":"Princess","c":"","p":"Принцесс филлер (1мл) Подбородок","v":13600},{"b":"Princess","c":"","p":"Принцесс Вольюм (1 мл) Углы \"Джоли\"","v":16800},{"b":"Princess","c":"","p":"Принцесс вольюм Носогубные складки","v":16800},{"b":"Princess","c":"","p":"Внутрикожное введение лекарственных препаратов (Принцесс Рич)","v":16000},{"b":"Princess","c":"","p":"Экспресс омоложение. Диспорт ( 80 ед), Принцесс Волюм ( 1 мл) , Реви стронг ( 2 мл)","v":40900},{"b":"Princess","c":"","p":"Внутрикожное введение лекарственных препаратов Принцес Рич/Princess Rich, 1 мл","v":11490},{"b":"Princess","c":"","p":"Принцесс вольюм Побородок","v":16800},{"b":"Princess","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Принцесс волюм (Princess volume) 1 мл","v":18900},{"b":"Princess","c":"","p":"Введение искусственных наполнителей в мягкие ткани с целью коррекции формы. Принцесс филлер (Princess filler) 1 мл","v":18900},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess Volume до 1 мл","v":24000},{"b":"Princess","c":"","p":"Princess Voiume. 1ml","v":20000},{"b":"Princess","c":"","p":"Введение искусственных имплантатов в мягкие ткани: Контурная пластика Princess filler/voluma 1мл","v":19000},{"b":"Princess","c":"","p":"Princess Rich 1 ml","v":17000},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess Filler1 мл","v":19000},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess Volum 1 мл","v":19000},{"b":"Princess","c":"","p":"Контурная пластика Принцесс Рич (Princess Rich), 1,0 мл","v":12500},{"b":"Princess","c":"","p":"Контурная пластика Принцесс Филлер (Princess Filler), 1,0 мл","v":13500},{"b":"Princess","c":"","p":"Контурная пластика Принцесс Волюм (Princess Volume), 1,0 мл","v":13750},{"b":"Princess","c":"","p":"Введение искусственного имплантата в мягкие ткани Princess Filler в объеме 1 мл","v":22510},{"b":"Princess","c":"","p":"Введение искусственного имплантата в мягкие ткани Princess Volume в объеме 1 мл","v":23960},{"b":"Princess","c":"","p":"Инъекции Princess Rich - 1,0 ml","v":10000},{"b":"Princess","c":"","p":"PRINCESS RICH 1.2 ml (Контурная пластика)","v":14400},{"b":"Princess","c":"","p":"PRINCESS FILLER 1 ml (Контурная пластика)","v":22500},{"b":"Princess","c":"","p":"PRINCESS VOLUME 1.2 ml (Контурная пластика)","v":24500},{"b":"Princess","c":"","p":"Биоревитализация кожи препаратами на основе гиалуроновой кислоты \"Princess rich\"","v":16500},{"b":"Princess","c":"","p":"Коррекция контура и объема губ \"Princess Filler\"/ Hyalax (Гиалакс)","v":18150},{"b":"Princess","c":"","p":"Коррекция контура и объема губ \"Princess Volume\"","v":18150},{"b":"Princess","c":"","p":"С использованием Princess Filler","v":10800},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess FILLER, 1 мл","v":19000},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess VOLUME, 1 мл","v":19000},{"b":"Princess","c":"","p":"Биоревитализация Princess Rich (Принцесс Рич) 1.0 ml ( 1 процедура)","v":10670},{"b":"Princess","c":"","p":"Инъекционная биоревитализация лица, шеи или зоны декольте Princess Rich 1,0 мл","v":10000},{"b":"Princess","c":"","p":"А11.01.013.042 Контурная пластика препаратом Princess Filler, 1 мл","v":26950},{"b":"Princess","c":"","p":"А11.01.013.072 Контурная пластика препаратом Princess Filler, 2 мл","v":48500},{"b":"Princess","c":"","p":"Принцесс филер 1мл","v":17500},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess filler(1ml)","v":22200},{"b":"Princess","c":"","p":"Контурная пластика препаратом Princess volum(1ml)","v":22200},{"b":"Princess","c":"","p":"Инъекции Princess Volume - 1 мл","v":12000},{"b":"Princess","c":"","p":"Princess Rich 1 ml","v":15000},{"b":"Princess","c":"","p":"Биоревитализация Princess Rich 1 ml","v":15000},{"b":"Princess","c":"","p":"Биоревитализация препаратом GLORY-23 Princess (Глори-23 Принцесс)","v":8500}],"finance":[{"co":"ООО «Мерц Фарма»","role":"Держатель РУ Belotero","inn":"7714689244","y2021":7666506,"y2022":8611187,"y2023":8795455,"y2024":9411546,"y2025":11036023,"np2025":305298},{"co":"ООО «АСТЭРА» (Иркутск)","role":"Дистрибьютор","inn":"3808232311","y2021":171297,"y2022":203803,"y2023":148098,"y2024":105120,"y2025":100651,"np2025":null},{"co":"ООО «Экспресс-Бьюти»","role":"Дистрибьютор","inn":"6211008754","y2021":36920,"y2022":65566,"y2023":65140,"y2024":58955,"y2025":60621,"np2025":null},{"co":"ООО «Беллагель-Мед» (БГМ)","role":"Дистрибьютор","inn":"7733288618","y2021":21540,"y2022":55452,"y2023":23962,"y2024":78943,"y2025":27530,"np2025":null},{"co":"ООО «Цукерберг»","role":"Дистрибьютор","inn":"7804662166","y2021":736,"y2022":2983,"y2023":4190,"y2024":10111,"y2025":21686,"np2025":null}]};
+
+/* ============ утилиты ============ */
+const $ = id => document.getElementById(id);
+function fmtInt(n){ return Math.round(n).toLocaleString('ru-RU'); }
+function fmtM(n){ // в млн с 1 знаком
+  const v = n/1e6;
+  return (Math.abs(v)>=100 ? v.toFixed(0) : v.toFixed(1)).replace('.', ',');
+}
+function fmtUsdM(n){ return fmtM(n)+' млн $'; }
+function fmtKg(n){ const t=n/1000; return (Math.abs(t)>=1000? (t/1000).toFixed(1).replace('.',',')+' тыс т' : Math.round(t).toLocaleString('ru-RU')+' т'); }
+function pct(x){ return (x*100).toFixed(1).replace('.',',')+'%'; }
+function quantile(sortedArr, q){
+  if(!sortedArr.length) return 0;
+  const pos = (sortedArr.length-1)*q, b = Math.floor(pos), r = pos-b;
+  return sortedArr[b+1]!==undefined ? sortedArr[b]+r*(sortedArr[b+1]-sortedArr[b]) : sortedArr[b];
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function color(i){ return ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)','var(--c9)'][i%9]; }
+function hex(i){ return ['#2563eb','#0ea5e9','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f43f5e','#64748b'][i%9]; }
+
+/* ============ SVG-графики ============ */
+function svgEl(w,h){
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('viewBox',`0 0 ${w} ${h}`); s.setAttribute('preserveAspectRatio','xMidYMid meet');
+  return s;
+}
+function txt(p,x,y,s,o={}){
+  const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x); t.setAttribute('y',y);
+  t.setAttribute('font-size',o.fs||11); t.setAttribute('fill',o.fill||'var(--muted)');
+  if(o.anchor) t.setAttribute('text-anchor',o.anchor);
+  if(o.weight) t.setAttribute('font-weight',o.weight);
+  t.textContent = s; p.appendChild(t); return t;
+}
+function rect(p,x,y,w,h,fill,o={}){
+  const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x',x); r.setAttribute('y',y); r.setAttribute('width',Math.max(0,w)); r.setAttribute('height',Math.max(0,h));
+  r.setAttribute('fill',fill); if(o.rx) r.setAttribute('rx',o.rx);
+  if(o.title){ const ti = document.createElementNS('http://www.w3.org/2000/svg','title'); ti.textContent = o.title; r.appendChild(ti); }
+  p.appendChild(r); return r;
+}
+// вертикальные столбцы
+function barV(mount, items, o={}){
+  mount.innerHTML='';
+  const W=760,H=o.h||300,pad={l:52,r:12,t:14,b:44};
+  const s=svgEl(W,H); mount.appendChild(s);
+  const max = Math.max(1, ...items.map(d=>d.v));
+  const nice = niceMax(max);
+  const iw=(W-pad.l-pad.r), ih=(H-pad.t-pad.b), bw=Math.min(64, iw/items.length*0.62);
+  for(let g=0; g<=4; g++){
+    const y = pad.t+ih-ih*g/4;
+    const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',pad.l); ln.setAttribute('x2',W-pad.r); ln.setAttribute('y1',y); ln.setAttribute('y2',y);
+    ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
+    txt(s,pad.l-6,y+3.5,fmtM(nice*g/4),{anchor:'end',fs:10.5});
+  }
+  items.forEach((d,i)=>{
+    const x = pad.l + iw*(i+0.5)/items.length - bw/2;
+    const h = ih*d.v/nice;
+    rect(s,x,pad.t+ih-h,bw,h,d.color||hex(i),{rx:3,title:`${d.l}: ${o.fmt? o.fmt(d.v): fmtM(d.v)} млн`});
+    txt(s,x+bw/2,pad.t+ih-h-4,o.fmt? o.fmt(d.v):fmtM(d.v),{anchor:'middle',fs:10,fill:'var(--ink2)',weight:600});
+    const lbl = txt(s,x+bw/2,pad.t+ih+15,d.l,{anchor:'middle',fs:10.5,fill:'var(--ink2)'});
+    if(d.l.length>13){ lbl.setAttribute('transform',`rotate(-20 ${x+bw/2} ${pad.t+ih+15})`); }
+  });
+  txt(s,6,12,o.unit||'млн $',{fs:10.5,fill:'var(--muted)'});
+}
+// горизонтальные (рейтинги)
+function barH(mount, items, o={}){
+  mount.innerHTML='';
+  const rowH=o.rowH||26, W=760, pad={l:o.l||170,r:90,t:6,b:6};
+  const H=pad.t+pad.b+items.length*rowH;
+  const s=svgEl(W,H); mount.appendChild(s);
+  const max=Math.max(1,...items.map(d=>d.v));
+  const iw=W-pad.l-pad.r;
+  items.forEach((d,i)=>{
+    const y=pad.t+i*rowH;
+    txt(s,pad.l-8,y+rowH/2+4,d.l.length>26?d.l.slice(0,25)+'…':d.l,{anchor:'end',fs:11.5,fill:'var(--ink2)'});
+    rect(s,pad.l,y+4,iw*d.v/max,rowH-9,d.color||hex(i),{rx:3,title:`${d.l}: ${o.fmt? o.fmt(d.v):fmtM(d.v)}`});
+    txt(s,pad.l+iw*d.v/max+6,y+rowH/2+4,o.fmt? o.fmt(d.v):fmtM(d.v),{fs:11,fill:'var(--ink2)',weight:600});
+  });
+}
+// линии
+function lineChart(mount, series, o={}){
+  mount.innerHTML='';
+  const W=760,H=o.h||300,pad={l:56,r:14,t:16,b:36};
+  const s=svgEl(W,H); mount.appendChild(s);
+  const xs = series.length? series[0].pts.map(p=>p.x):[];
+  let max=0; series.forEach(se=>se.pts.forEach(p=>{ if(p.y>max) max=p.y; }));
+  if(o.max) max=o.max;
+  const nice=niceMax(max);
+  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const X = i => pad.l + (xs.length<2? iw/2 : iw*i/(xs.length-1));
+  const Y = v => pad.t+ih-ih*v/nice;
+  for(let g=0; g<=4; g++){
+    const y=pad.t+ih-ih*g/4;
+    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',pad.l); ln.setAttribute('x2',W-pad.r); ln.setAttribute('y1',y); ln.setAttribute('y2',y);
+    ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
+    txt(s,pad.l-6,y+3.5,o.fmtY? o.fmtY(nice*g/4):fmtM(nice*g/4),{anchor:'end',fs:10.5});
+  }
+  xs.forEach((x,i)=>{
+    if(xs.length>14 && i%2) return;
+    txt(s,X(i),H-pad.b+16,String(x),{anchor:'middle',fs:10.5});
+  });
+  series.forEach(se=>{
+    const dd = se.pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.y).toFixed(1)}`).join(' ');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',dd); path.setAttribute('fill','none');
+    path.setAttribute('stroke',se.color); path.setAttribute('stroke-width',se.w||2.2);
+    if(se.dash) path.setAttribute('stroke-dasharray','6 4');
+    s.appendChild(path);
+    se.pts.forEach((p,i)=>{
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',X(i)); c.setAttribute('cy',Y(p.y)); c.setAttribute('r',3);
+      c.setAttribute('fill',se.color); c.setAttribute('stroke','#fff'); c.setAttribute('stroke-width',1.4);
+      const ti=document.createElementNS('http://www.w3.org/2000/svg','title');
+      ti.textContent=`${se.name} · ${p.x}: ${o.fmtP? o.fmtP(p.y):fmtM(p.y)}`; c.appendChild(ti);
+      s.appendChild(c);
+    });
+  });
+  if(o.unit) txt(s,6,12,o.unit,{fs:10.5,fill:'var(--muted)'});
+}
+function niceMax(m){
+  const e=Math.pow(10,Math.floor(Math.log10(m)));
+  const n=m/e;
+  const step = n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10;
+  return step*e;
+}
+// пончик
+function donut(mount, items, o={}){
+  mount.innerHTML='';
+  const W=380,H=290,cx=140,cy=145,R=110,r=66;
+  const s=svgEl(W,H); mount.appendChild(s);
+  const total=items.reduce((a,b)=>a+b.v,0)||1;
+  let a0=-Math.PI/2;
+  items.forEach((d,i)=>{
+    const a1=a0+2*Math.PI*d.v/total;
+    const large=(a1-a0)>Math.PI?1:0;
+    const p=[cx+R*Math.cos(a0),cy+R*Math.sin(a0),cx+R*Math.cos(a1),cy+R*Math.sin(a1),cx+r*Math.cos(a1),cy+r*Math.sin(a1),cx+r*Math.cos(a0),cy+r*Math.sin(a0)];
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${p[0]},${p[1]} A${R},${R} 0 ${large} 1 ${p[2]},${p[3]} L${p[4]},${p[5]} A${r},${r} 0 ${large} 0 ${p[6]},${p[7]} Z`);
+    path.setAttribute('fill',d.color||hex(i));
+    const ti=document.createElementNS('http://www.w3.org/2000/svg','title');
+    ti.textContent=`${d.l}: ${pct(d.v/total)}`; path.appendChild(ti);
+    s.appendChild(path); a0=a1;
+  });
+  txt(s,cx,cy-4,fmtM(total),{anchor:'middle',fs:20,fill:'var(--ink)',weight:700});
+  txt(s,cx,cy+16,'млн $, 2025',{anchor:'middle',fs:11,fill:'var(--muted)'});
+  items.forEach((d,i)=>{
+    const y=36+i*22;
+    rect(s,275,y-8,10,10,d.color||hex(i),{rx:2});
+    txt(s,291,y,d.l.length>14?d.l.slice(0,13)+'…':d.l,{fs:11,fill:'var(--ink2)'});
+    txt(s,291,y+11,pct(d.v/total),{fs:9.5,fill:'var(--muted)'});
+  });
+}
+// ценовой коридор P10–P90
+function rangeChart(mount, items, o={}){
+  mount.innerHTML='';
+  const rowH=40,W=760,pad={l:110,r:110,t:24,b:10};
+  const H=pad.t+pad.b+items.length*rowH;
+  const s=svgEl(W,H); mount.appendChild(s);
+  const max=niceMax(Math.max(...items.map(d=>d.p90)))*1.15;
+  const iw=W-pad.l-pad.r;
+  const X=v=>pad.l+iw*v/max;
+  for(let g=0;g<=4;g++){
+    const x=pad.l+iw*g/4;
+    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',x); ln.setAttribute('x2',x); ln.setAttribute('y1',pad.t-6); ln.setAttribute('y2',H-pad.b);
+    ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
+    txt(s,x,H-1,fmtInt(max*g/4),{anchor:'middle',fs:10,fill:'var(--muted)'});
+  }
+  items.forEach((d,i)=>{
+    const y=pad.t+i*rowH+rowH/2;
+    txt(s,pad.l-10,y+4,d.l,{anchor:'end',fs:12,fill:'var(--ink2)',weight:600});
+    // P10-P90
+    rect(s,X(d.p10),y-7,X(d.p90)-X(d.p10),14,hex(i),{rx:7,opacity:.35,title:`P10–P90: ${fmtInt(d.p10)} – ${fmtInt(d.p90)} ₽`});
+    // P25-P75
+    rect(s,X(d.p25),y-7,X(d.p75)-X(d.p25),14,hex(i),{rx:3,title:`P25–P75: ${fmtInt(d.p25)} – ${fmtInt(d.p75)} ₽`});
+    // медиана
+    const med=document.createElementNS('http://www.w3.org/2000/svg','line');
+    med.setAttribute('x1',X(d.p50)); med.setAttribute('x2',X(d.p50)); med.setAttribute('y1',y-10); med.setAttribute('y2',y+10);
+    med.setAttribute('style','stroke:var(--ink)'); med.setAttribute('stroke-width',2.5); s.appendChild(med);
+    txt(s,X(d.p90)+8,y+4,fmtInt(d.p50),{fs:11,fill:'var(--ink)',weight:700});
+  });
+  txt(s,pad.l,14,'₽ за процедуру · линия = медиана · тёмная полоса P25–P75 · светлая P10–P90',{fs:10.5,fill:'var(--muted)'});
+}
+
+/* ============ таблица ============ */
+function makeTable(mountId, cfg){
+  const mount=$(mountId); if(!mount) return;
+  let rows=cfg.rows.slice(), sortK=null, sortD=1, page=1, q='', filt={};
+  (cfg.filters||[]).forEach(f=>filt[f.k]='');
+  const pageSize=cfg.pageSize||20;
+  mount.innerHTML='';
+  const tools=document.createElement('div'); tools.className='tbl-tools';
+  if(cfg.search) tools.innerHTML+=`<input type="text" placeholder="${esc(cfg.search)}" data-role="q">`;
+  (cfg.filters||[]).forEach(f=>{
+    const vals=[...new Set(cfg.rows.map(r=>r[f.k]).filter(v=>v!==''&&v!=null))].sort();
+    tools.innerHTML+=`<select data-f="${esc(f.k)}"><option value="">${esc(f.label)}: все</option>`+
+      vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')+'</select>';
+  });
+  tools.innerHTML+=`<span class="cnt" data-role="cnt"></span>`;
+  mount.appendChild(tools);
+  const wrap=document.createElement('div'); wrap.className='tbl-wrap';
+  const table=document.createElement('table'); table.className='data';
+  wrap.appendChild(table); mount.appendChild(wrap);
+  const pager=document.createElement('div'); pager.className='pager nb-skip'; mount.appendChild(pager);
+  const qEl=tools.querySelector('[data-role=q]');
+  if(qEl) qEl.addEventListener('input',e=>{ q=e.target.value.toLowerCase(); page=1; render(); });
+  tools.querySelectorAll('select[data-f]').forEach(sel=>sel.addEventListener('change',e=>{ filt[e.target.dataset.f]=e.target.value; page=1; render(); }));
+  const csvBtn=tools.querySelector('[data-role=csv]'); if(csvBtn) csvBtn.addEventListener('click',()=>exportCsv(cur, cfg.cols));
+  let cur=[];
+  function pass(r){
+    for(const k in filt){ if(filt[k] && String(r[k])!==filt[k]) return false; }
+    if(q){
+      const hay=cfg.cols.map(c=>r[c.k]).join(' ').toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  }
+  function render(){
+    let list=rows.filter(pass);
+    if(sortK){ const col=cfg.cols.find(c=>c.k===sortK);
+      list.sort((a,b)=>{ let x=a[sortK],y=b[sortK];
+        if(col&&col.num){ x=+x||0; y=+y||0; return (x-y)*sortD; }
+        return String(x).localeCompare(String(y),'ru')*sortD; });
+    }
+    cur=list;
+    const pages=Math.max(1,Math.ceil(list.length/pageSize));
+    if(page>pages) page=pages;
+    const slice=list.slice((page-1)*pageSize, page*pageSize);
+    let h='<thead><tr>'+cfg.cols.map(c=>`<th data-k="${esc(c.k)}" class="${c.num?'num':''}">${esc(c.label)}${sortK===c.k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr></thead><tbody>';
+    if(!slice.length) h+='<tr><td colspan="'+cfg.cols.length+'" class="muted">Нет данных по фильтру</td></tr>';
+    slice.forEach(r=>{
+      h+='<tr>'+cfg.cols.map(c=>{
+        let v=r[c.k];
+        if(c.fmt) v=c.fmt(v,r);
+        if(v==null||v==='') v='<span class="muted">нет данных</span>';
+        return `<td class="${c.num?'num':''}">${v}</td>`;
+      }).join('')+'</tr>';
+    });
+    table.innerHTML=h+'</tbody>';
+    if(window.__blurNumbers){ try{ window.__blurNumbers(table); }catch(e){} }
+    table.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{
+      const k=th.dataset.k;
+      if(sortK===k) sortD=-sortD; else { sortK=k; sortD=1; }
+      render();
+    }));
+    tools.querySelector('[data-role=cnt]').textContent=`Найдено: ${list.length}`;
+    let ph=`<button ${page<=1?'disabled':''} data-p="1">«</button><button ${page<=1?'disabled':''} data-p="${page-1}">‹</button><span>Стр. ${page}/${pages}</span><button ${page>=pages?'disabled':''} data-p="${page+1}">›</button><button ${page>=pages?'disabled':''} data-p="${pages}">»</button>`;
+    pager.innerHTML=ph;
+    pager.querySelectorAll('button[data-p]').forEach(b=>b.addEventListener('click',()=>{ page=+b.dataset.p; render(); }));
+  }
+  function exportCsv(list, cols){
+    const head=cols.map(c=>c.label).join(';');
+    const body=list.map(r=>cols.map(c=>{
+      let v=r[c.k]; if(v==null) v='';
+      v=String(v).replace(/<[^>]+>/g,'').replace(/[";\r\n]/g,' ').trim();
+      return v;
+    }).join(';')).join('\n');
+    const blob=new Blob(['\ufeff'+head+'\n'+body],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=(cfg.csv||'table')+'.csv'; a.click();
+  }
+  const TBLI={orig:cfg.pageSize||20,setPageSize(n){pageSize=n;page=1;render();}};
+  (window.__TBL=window.__TBL||[]).push(TBLI);
+  render();
+}
+
+/* ============ вкладки ============ */
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('section.tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); $('tab-'+b.dataset.t).classList.add('on');
+  window.scrollTo({top:0});
+}));
+(function(){
+  const h=(location.hash||'').replace('#','');
+  if(h){ const b=document.querySelector('nav.tabs button[data-t="'+h+'"]'); if(b) b.click(); }
+})();
+
+/* ============ агрегаты ============ */
+const imp=DATA.importSvod;
+function sumYear(y){ return imp.filter(r=>r.t==='год'&&r.p===String(y)).reduce((a,b)=>a+b.u,0); }
+const annual=DATA.annual; // [{year,usd}]
+const annualMap={}; annual.forEach(a=>annualMap[a.year]=a.usd);
+const countries2025=[...new Set(imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).map(r=>r.c))];
+function countryYear(c,y){ const r=imp.find(r=>r.c===c&&r.t==='год'&&r.p===String(y)); return r?r.u:0; }
+function countryYtd(c){ return imp.filter(r=>r.c===c&&r.t==='месяц'&&r.p.indexOf('2026-')===0).reduce((a,b)=>a+b.u,0); }
+const top2025=imp.filter(r=>r.t==='год'&&r.p==='2025'&&r.u>0).sort((a,b)=>b.u-a.u);
+
+/* ---- ОБЗОР ---- */
+(function(){
+  $('bd-date').textContent='Данные на '+DATA.meta.generated;
+  $('ttl').textContent=DATA.meta.title;
+  const y25=annualMap[2025]||0, y24=annualMap[2024]||0, y23=annualMap[2023]||0;
+  const growth=y24? (y25-y24)/y24:0;
+  const cnYtd=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.usd,0);
+  const cn25=DATA.china.e33049900.filter(r=>r.m.indexOf('2025-')===0).reduce((a,b)=>a+b.usd,0);
+  const cnGrowth=cn25? (cnYtd*12/9-cn25)/cn25 : 0;
+  const fin=DATA.finance[0];
+  const prices=DATA.prices;
+  const belo=prices.filter(p=>p.b==='Belotero').map(p=>p.v).sort((a,b)=>a-b);
+  const beloMed=quantile(belo,.5);
+  const est2026=DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd;
+  const kpis=[
+    {lab:'Импорт 3304.99 в РФ, 2025', val:fmtM(y25)+' млн $', delta:`${growth>=0?'▲':'▼'} ${pct(Math.abs(growth))} к 2024`, cls:growth>=0?'up':'down', note:'19 стран, зеркало Comtrade'},
+    {lab:'Импорт, 2026 (9 мес., факт)', val:fmtM(DATA.ytd2026.knownUsd)+' млн $', delta:`+ ${fmtM(DATA.ytd2026.missingEstUsd)} млн $ оценка`, cls:'flat', note:`≈ ${fmtM(est2026*4/3)} млн $ за полный год (оценка)`},
+    {lab:'Китай → РФ, 2026 (9 мес.)', val:fmtM(cnYtd)+' млн $', delta:`▲ ${pct(cnGrowth)} к 2025 (год.)`, cls:'up', note:'официальная таможня КНР'},
+    {lab:'Мерц Фарма, выручка 2025', val:(fin.y2025/1e6).toFixed(2).replace('.',',')+' млрд ₽', delta:'▲ 17,2% к 2024', cls:'up', note:'БФО ФНС, весь фарма-опт'},
+    {lab:'Розница Belotero, медиана', val:fmtInt(beloMed)+' ₽', delta:'за процедуру, Москва', cls:'flat', note:`коридор ${fmtInt(belo[0])}–${fmtInt(belo[belo.length-1])} ₽`},
+    {lab:'Регистраций Belotero в РФ', val:DATA.registrations.length, delta:'действующих, класс риска 3', cls:'flat', note:'Госреестр МИ, все ООО «Мерц Фарма»'}
+  ];
+  $('ov-kpi').innerHTML=kpis.map(k=>`<div class="card kpi"><div class="lab">${esc(k.lab)}</div><div class="val small">${esc(k.val)}</div><div class="delta ${k.cls}">${esc(k.delta)}</div><div class="note">${esc(k.note)}</div></div>`).join('');
+
+  // годовые
+  const ann=annual.map(a=>({l:String(a.year),v:a.usd/1e6,color:a.year===2026?'#94a3b8':'#2563eb'}));
+  ann.push({l:'2026*',v:est2026/1e6,color:'#f59e0b'});
+  barV($('ch-annual'),ann,{fmt:v=>v.toFixed(0)});
+  const t10=top2025.slice(0,10).map(r=>({l:r.c,v:r.u/1e6}));
+  barH($('ch-top10'),t10,{fmt:v=>v.toFixed(0),rowH:24,l:150});
+  // месячные 2026
+  const months=[...new Set(DATA.china.e33049900.map(r=>r.m))].filter(m=>m.indexOf('2026-')===0).sort();
+  const monthlyCountries=['Китай','Германия','Польша','Израиль','Италия','Испания'];
+  const series=monthlyCountries.map((c,i)=>{
+    const pts=months.map(m=>{
+      const r=imp.find(r=>r.c===c&&r.t==='месяц'&&r.p===m);
+      return {x:m.slice(5),y:r?r.u/1e6:0};
+    });
+    return {name:c,color:hex(i),pts};
+  }).filter(s=>s.pts.some(p=>p.y>0));
+  lineChart($('ch-monthly26'),series,{unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')+' млн'});
+  $('lg-monthly26').innerHTML=series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')+'<span><i style="background:#94a3b8"></i>2026* — оценка года по 9 мес.</span>';
+
+  $('ov-facts').innerHTML=[
+    `Импорт 3304.99 в РФ вырос с <b>${fmtM(annualMap[2019])} млн $ (2019)</b> до <b>${fmtM(y25)} млн $ (2025)</b>; провал 2022 (санкции, −${pct((annualMap[2021]-annualMap[2022])/annualMap[2021])}) полностью отыгран.`,
+    `Топ-3 поставщика 2025: ${top2025.slice(0,3).map(r=>esc(r.c)+' ('+fmtM(r.u)+' млн)').join(', ')}.`,
+    `Китай — единственный источник помесячных данных 2026 в полном объёме: <b>${fmtM(cnYtd)} млн $ за 9 мес. (+${pct(cnGrowth)} к 2025)</b>.`,
+    `Среди 19 стран нет данных в Comtrade у Австрии (все годы) и Ирландии (2023, 2025) — они не отчитываются.`,
+    `Франция и Республика Корея дают ${pct((top2025[0].u+ (top2025[1]?top2025[1].u:0))/y25)} импорта 2025, но не публикуют помесячные.`
+  ].map(x=>'<li>'+x+'</li>').join('');
+  $('ov-brand').innerHTML=[
+    `<b>Belotero</b> — ${DATA.meta.brand}; держатель РУ ООО «Мерц Фарма», производитель Anteis SA (Швейцария).`,
+    `<b>${DATA.registrations.length} регистраций</b> в Госреестре МИ (класс риска 3, все действующие), линейки: ${[...new Set(DATA.registrations.map(r=>r.model))].join(', ')}.`,
+    `Экспертная доля <b>${String(DATA.meta.beloteroShare).replace('.',',')}%</b> импортного сегмента → ≈ <b>${fmtM(y25*DATA.meta.beloteroShare/100)} млн $</b> в 2025.`,
+    `Розничная медиана <b>${fmtInt(beloMed)} ₽</b> — на 17% ниже Juvederm (26 500 ₽) и на 9% ниже Teosyal (24 200 ₽).`,
+    `Выручка держателя РУ <b>11,04 млрд ₽ (2025)</b>, чистая прибыль +305 млн ₽ после убытка 2024.`,
+    `Канал: прямые поставки + дистрибьюторы (АСТЭРА, Экспресс-Бьюти, БГМ, Цукерберг), выручка которых за 2021–2025 сжимается/растёт неравномерно.`
+  ].map(x=>'<li>'+x+'</li>').join('');
+})();
+
+/* ---- ИМПОРТ ---- */
+(function(){
+  const y25=annualMap[2025], known=DATA.ytd2026.knownUsd, est=known+DATA.ytd2026.missingEstUsd;
+  const kg25=imp.filter(r=>r.t==='год'&&r.p==='2025').reduce((a,b)=>a+(b.k||0),0);
+  const cnKg=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.kg,0);
+  const kpis=[
+    {lab:'2025 (год), все страны', val:fmtM(y25)+' млн $', note:'17 стран с данными из 19'},
+    {lab:'2026, 9 мес. факт', val:fmtM(known)+' млн $', note:'11 стран с помесячными (вкл. Китай)'},
+    {lab:'2026, полный год (оценка)', val:fmtM(est*4/3)+' млн $', note:'факт 9 мес. + 9/12 для стран без помесячных', est:true},
+    {lab:'Тоннаж 2025', val:fmtKg(kg25), note:`Китай 2026 9 мес.: ${fmtKg(cnKg)}`}
+  ];
+  $('im-kpi').innerHTML=kpis.map(k=>`<div class="card kpi"><div class="lab">${esc(k.lab)}</div><div class="val small">${esc(k.val)}</div><div class="note">${k.est?'<span class="tag est">оценка</span> ':''}${esc(k.note)}</div></div>`).join('');
+
+  // сравнение стран
+  const cmp=top2025.slice(0,12).map(r=>({l:r.c,a:r.u/1e6,b:countryYtd(r.c)/1e6}));
+  (function(){
+    const mount=$('ch-cmp'); mount.innerHTML='';
+    const W=760,H=330,pad={l:52,r:12,t:16,b:56};
+    const s=svgEl(W,H); mount.appendChild(s);
+    const max=niceMax(Math.max(...cmp.map(d=>Math.max(d.a,d.b))));
+    const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b, bw=Math.min(24,iw/cmp.length*0.36);
+    for(let g=0;g<=4;g++){
+      const y=pad.t+ih-ih*g/4;
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',pad.l);ln.setAttribute('x2',W-pad.r);ln.setAttribute('y1',y);ln.setAttribute('y2',y);
+      ln.setAttribute('style','stroke:var(--line)'); s.appendChild(ln);
+      txt(s,pad.l-6,y+3.5,fmtM(max*g/4),{anchor:'end',fs:10.5});
+    }
+    cmp.forEach((d,i)=>{
+      const cx=pad.l+iw*(i+0.5)/cmp.length;
+      rect(s,cx-bw-2,pad.t+ih-ih*d.a/max,bw,ih*d.a/max,'#2563eb',{rx:2,title:`${d.l} 2025: ${d.a.toFixed(1)} млн $`});
+      rect(s,cx+2,pad.t+ih-ih*d.b/max,bw,ih*d.b/max,d.b>0?'#0ea5e9':'#e2e8f0',{rx:2,title:`${d.l} 2026 9 мес: ${d.b>0?d.b.toFixed(1)+' млн $':'нет данных'}`});
+      const lbl=txt(s,cx,pad.t+ih+16,d.l,{anchor:'middle',fs:10,fill:'var(--ink2)'});
+      if(d.l.length>11) lbl.setAttribute('transform',`rotate(-25 ${cx} ${pad.t+ih+16})`);
+      if(d.b===0) txt(s,cx,pad.t+ih-6,'нет данных',{anchor:'middle',fs:8.5,fill:'var(--muted)'});
+    });
+    txt(s,6,12,'млн $',{fs:10.5,fill:'var(--muted)'});
+    mount.insertAdjacentHTML('afterend','');
+    const lg=document.createElement('div'); lg.className='legend';
+    lg.innerHTML='<span><i style="background:#2563eb"></i>2025 (год)</span><span><i style="background:#0ea5e9"></i>2026 (9 мес., факт)</span><span><i style="background:#e2e8f0"></i>нет помесячных данных</span>';
+    mount.appendChild(lg);
+  })();
+
+  // Китай USD / kg
+  const cnE=DATA.china.e33049900;
+  lineChart($('ch-cn-usd'),[{name:'Китай → РФ',color:'#2563eb',pts:cnE.map(r=>({x:r.m.slice(5),y:r.usd/1e6}))}],{h:260,unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')});
+  barV($('ch-cn-kg'),cnE.map((r,i)=>({l:r.m.slice(5),v:r.kg/1000,color:i<10?'#2563eb':'#0ea5e9'})),{h:260,fmt:v=>v.toFixed(0)});
+
+  // таблица
+  makeTable('tbl-import',{
+    csv:'импорт_330499',
+    search:'Поиск по стране/источнику…',
+    filters:[{k:'t',label:'Тип'},{k:'c',label:'Страна'},{k:'p',label:'Период'}],
+    pageSize:25,
+    cols:[
+      {k:'c',label:'Страна'},
+      {k:'p',label:'Период'},
+      {k:'t',label:'Тип'},
+      {k:'u',label:'USD',num:true,fmt:v=>v?fmtInt(v):'<span class="muted">нет данных</span>'},
+      {k:'k',label:'Кг',num:true,fmt:v=>v?fmtInt(v):'—'},
+      {k:'s',label:'Источник',fmt:v=>`<span class="muted">${esc(v)}</span>`},
+      {k:'n',label:'Пометка',fmt:v=>v?`<span class="tag na">${esc(v)}</span>`:''}
+    ],
+    rows:imp
+  });
+})();
+
+/* ---- СТРУКТУРА ---- */
+(function(){
+  const y25=top2025;
+  const total=y25.reduce((a,b)=>a+b.u,0);
+  const top=y25.slice(0,7);
+  const rest=y25.slice(7).reduce((a,b)=>a+b.u,0);
+  const items=top.map((r,i)=>({l:r.c,v:r.u,color:hex(i)}));
+  items.push({l:'Прочие',v:rest,color:'#cbd5e1'});
+  donut($('ch-share25'),items);
+
+  // тренд долей топ-5
+  const years=[2019,2020,2021,2022,2023,2024,2025];
+  const t5=y25.slice(0,5).map(r=>r.c);
+  const series=t5.map((c,i)=>{
+    const pts=years.map(y=>{
+      const tot=sumYear(y)||1;
+      return {x:String(y),y:countryYear(c,y)/tot*100};
+    });
+    return {name:c,color:hex(i),pts};
+  });
+  lineChart($('ch-sharetrend'),series,{h:290,unit:'% импорта',fmtY:v=>v.toFixed(0)+'%',fmtP:v=>v.toFixed(1).replace('.',',')+'%'});
+  $('lg-sharetrend').innerHTML=series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('');
+
+  // Китай структура кодов
+  const months=[...new Set(DATA.china.e33049900.map(r=>r.m))].sort();
+  const s1=months.map(m=>{const r=DATA.china.e33049900.find(x=>x.m===m);return {x:m.slice(5),y:r?r.usd/1e6:0};});
+  const s2=months.map(m=>{const r=DATA.china.e30067000.find(x=>x.m===m);return {x:m.slice(5),y:r?r.usd/1e6:0};});
+  const s3=months.map(m=>{const r=DATA.china.e3304.find(x=>x.m===m);return {x:m.slice(5),y:r?r.usd/1e6:0};});
+  lineChart($('ch-cn-struct'),[
+    {name:'3304 вся группа',color:'#94a3b8',pts:s3,dash:true},
+    {name:'33049900 (филлеры+косметика)',color:'#2563eb',pts:s1},
+    {name:'30067000 медгели',color:'#10b981',pts:s2}
+  ],{h:280,unit:'млн $',fmtP:v=>v.toFixed(1).replace('.',',')});
+  $('ch-cn-struct').insertAdjacentHTML('afterend','<div class="legend"><span><i style="background:#94a3b8"></i>3304 — вся группа</span><span><i style="background:#2563eb"></i>33049900</span><span><i style="background:#10b981"></i>30067000</span></div>');
+
+  // модели Belotero по рознице
+  const modelRe=/(Lips Contour|Lips Shape|Липс Контур|Липс Шейп|Soft|Софт|Balance|Баланс|Hydro|Гидро|Intense|Интенс|Revive|Ревайв|Volume|Волюм)/i;
+  const map={};
+  DATA.prices.filter(p=>p.b==='Belotero').forEach(p=>{
+    const m=p.p.match(modelRe);
+    const key=m? m[1].toLowerCase().replace('ліпс','') : 'прочее/без указания';
+    const k2=/lips contour|липс контур/i.test(p.p)?'Lips Contour':/lips shape|липс шейп/i.test(p.p)?'Lips Shape':
+      /soft|софт/i.test(p.p)?'Soft':/balance|баланс/i.test(p.p)?'Balance':/hydro|гидро/i.test(p.p)?'Hydro':
+      /intense|интенс/i.test(p.p)?'Intense':/revive|ревайв/i.test(p.p)?'Revive':/volume|волюм/i.test(p.p)?'Volume':'прочее';
+    (map[k2]=map[k2]||[]).push(p.v);
+  });
+  const order=['Lips Contour','Lips Shape','Soft','Balance','Hydro','Intense','Revive','Volume','прочее'];
+  const mItems=order.filter(k=>map[k]&&map[k].length>=2).map(k=>({l:k,v:quantile(map[k].sort((a,b)=>a-b),.5),n:map[k].length}));
+  barV($('ch-belo-models'),mItems,{h:280,fmt:v=>fmtInt(v)});
+
+  // таблица регистраций
+  makeTable('tbl-regs',{
+    csv:'регистрации_Belotero',
+    search:'Поиск по номеру/наименованию…',
+    filters:[{k:'model',label:'Модель'},{k:'country',label:'Страна'}],
+    pageSize:10,
+    cols:[
+      {k:'reg',label:'Рег. номер'},
+      {k:'erul',label:'ЕРУЛ'},
+      {k:'model',label:'Линейка',fmt:v=>`<span class="tag brand">${esc(v)}</span>`},
+      {k:'name',label:'Наименование'},
+      {k:'holder',label:'Держатель РУ'},
+      {k:'country',label:'Страна произв.'},
+      {k:'date',label:'Регистрация'},
+      {k:'expiry',label:'Срок'},
+      {k:'risk',label:'Кл. риска',num:true},
+      {k:'status',label:'Статус',fmt:v=>`<span class="tag ok">${esc(v)}</span>`}
+    ],
+    rows:DATA.registrations
+  });
+})();
+
+/* ---- КОНКУРЕНЦИЯ ---- */
+(function(){
+  const brands=['Belotero','Juvederm','Restylane','Teosyal','Radiesse','Princess'];
+  const stats=brands.map(b=>{
+    const vs=DATA.prices.filter(p=>p.b===b).map(p=>p.v).sort((a,b)=>a-b);
+    return {b,n:vs.length,min:vs[0],p10:quantile(vs,.1),p25:quantile(vs,.25),p50:quantile(vs,.5),p75:quantile(vs,.75),p90:quantile(vs,.9),max:vs[vs.length-1]};
+  });
+  rangeChart($('ch-range'),stats.map(s=>({l:s.b,p10:s.p10,p25:s.p25,p50:s.p50,p75:s.p75,p90:s.p90})));
+  const med=stats.slice().sort((a,b)=>a.p50-b.p50).map(s=>({l:s.b,v:s.p50,fmt:fmtInt}));
+  barV($('ch-med'),med.map((m,i)=>({l:m.l,v:m.v,color:m.l==='Belotero'?'#2563eb':hex(i+1)})),{h:280,fmt:v=>fmtInt(v)});
+  makeTable('tbl-brands',{
+    csv:'бренды_цены',
+    search:'Поиск бренда…',
+    pageSize:10,
+    cols:[
+      {k:'b',label:'Бренд'},
+      {k:'n',label:'Цен',num:true,fmt:v=>fmtInt(v)},
+      {k:'min',label:'Мин',num:true,fmt:v=>fmtInt(v)},
+      {k:'p25',label:'P25',num:true,fmt:v=>fmtInt(v)},
+      {k:'p50',label:'Медиана',num:true,fmt:v=>fmtInt(v)},
+      {k:'p75',label:'P75',num:true,fmt:v=>fmtInt(v)},
+      {k:'p90',label:'P90',num:true,fmt:v=>fmtInt(v)},
+      {k:'max',label:'Макс',num:true,fmt:v=>fmtInt(v)}
+    ],
+    rows:stats
+  });
+  makeTable('tbl-prices',{
+    csv:'цены_розница_МСК',
+    search:'Поиск по клинике/процедуре…',
+    filters:[{k:'b',label:'Бренд'}],
+    pageSize:20,
+    cols:[
+      {k:'b',label:'Бренд',fmt:v=>`<span class="tag ${v==='Belotero'?'brand':'na'}">${esc(v)}</span>`},
+      {k:'c',label:'Клиника'},
+      {k:'p',label:'Процедура'},
+      {k:'v',label:'₽',num:true,fmt:v=>fmtInt(v)}
+    ],
+    rows:DATA.prices
+  });
+})();
+
+/* ---- ТОП-5 ---- */
+(function(){
+  const metrics={
+    'c25':{label:'Страны-экспортёры, 2025, USD',hint:'Импорт в РФ по 3304.99, зеркало Comtrade',rows:()=>top2025.map(r=>({name:r.c,v:r.u,note:'2025, год'}))},
+    'c26':{label:'Страны-экспортёры, 2026 (9 мес.), USD',hint:'Только страны с помесячными данными',rows:()=>{const m={};imp.filter(r=>r.t==='месяц'&&r.p.indexOf('2026-')===0).forEach(r=>{m[r.c]=(m[r.c]||0)+r.u;});return Object.entries(m).map(([k,v])=>({name:k,v,note:'2026, 9 мес.'})).sort((a,b)=>b.v-a.v);}},
+    'brands':{label:'Бренды по медиане цены, ₽',hint:'Клиники Москвы, ПроДокторов',rows:()=>{const b=['Belotero','Juvederm','Restylane','Teosyal','Radiesse','Princess'];return b.map(x=>{const vs=DATA.prices.filter(p=>p.b===x).map(p=>p.v).sort((a,b)=>a-b);return {name:x,v:quantile(vs,.5),note:vs.length+' цен'};}).sort((a,b)=>b.v-a.v);}},
+    'dist':{label:'Дистрибьюторы по выручке 2025, тыс ₽',hint:'БФО ФНС, вся выручка компании',rows:()=>DATA.finance.filter(f=>f.role==='Дистрибьютор').map(f=>({name:f.co,v:f.y2025,note:'2025'})).sort((a,b)=>b.v-a.v)},
+    'fin':{label:'Компании по выручке 2025, тыс ₽',hint:'БФО ФНС',rows:()=>DATA.finance.map(f=>({name:f.co,v:f.y2025,note:f.role})).sort((a,b)=>b.v-a.v)},
+    'years':{label:'Годовые итоги импорта, USD',hint:'Все 19 стран, зеркало Comtrade',rows:()=>annual.map(a=>({name:String(a.year),v:a.usd,note:a.year===2026?'оценка':'факт'}))}
+  };
+  const sel=$('t5-metric');
+  sel.innerHTML=Object.entries(metrics).map(([k,m])=>`<option value="${k}">${esc(m.label)}</option>`).join('');
+  function render(){
+    const m=metrics[sel.value];
+    const rows=m.rows();
+    const top=rows.slice(0,5);
+    $('t5-hint').textContent=m.hint;
+    const isRub=sel.value==='brands';
+    const isT=sel.value==='dist'||sel.value==='fin';
+    const fmt=v=>isRub?fmtInt(v)+' ₽':isT?fmtInt(v)+' тыс ₽':(v>=1e6? fmtM(v)+' млн $':fmtInt(v));
+    barH($('ch-t5'),top.map(r=>({l:r.name.length>22?r.name.slice(0,21)+'…':r.name,v:r.v,color:r.name.indexOf('Belotero')>=0?'#2563eb':undefined})),{fmt,rowH:38,l:180});
+    makeTable('tbl-t5',{
+      csv:'топ5_'+sel.value,
+      search:'Поиск…',
+      pageSize:10,
+      cols:[
+        {k:'name',label:'Место / объект'},
+        {k:'v',label:'Значение',num:true,fmt:v=>fmt(v)},
+        {k:'note',label:'Примечание',fmt:v=>`<span class="muted">${esc(v)}</span>`}
+      ],
+      rows
+    });
+  }
+  sel.addEventListener('change',render);
+  render();
+})();
+
+/* ---- ПРОГНОЗ ---- */
+(function(){
+  const y25=annualMap[2025];
+  const cagr=Math.pow(annualMap[2025]/annualMap[2019],1/6)-1; // 2019→2025
+  const est2026=(DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3;
+  const scenarios={base:cagr,opt:cagr+0.03,pes:Math.max(0,cagr-0.03)};
+  function fcTable(sc, share){
+    const g=scenarios[sc];
+    const rows=[];
+    let prev=est2026;
+    rows.push({year:2026,total:est2026,belo:est2026*share,growth:null,kind:'оценка'});
+    for(let y=2027;y<=2029;y++){
+      prev=prev*(1+g);
+      rows.push({year:y,total:prev,belo:prev*share,growth:g,kind:'прогноз'});
+    }
+    return rows;
+  }
+  function render(){
+    const sc=$('fc-sc').value;
+    const share=(+$('fc-share').value||0)/100;
+    const rows=fcTable(sc,share);
+    const base=fcTable('base',share), opt=fcTable('opt',share), pes=fcTable('pes',share);
+    const hist=annual.map(a=>({x:String(a.year),y:a.usd/1e6}));
+    const mk=(rows,color,name,dash)=>({name,color,dash,pts:[{x:'2026',y:rows[0].total/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.total/1e6}))]});
+    lineChart($('ch-fc'),[
+      {name:'Факт 2019–2025',color:'#0f172a',pts:hist},
+      mk(base,'#2563eb','Базовый'),
+      mk(opt,'#10b981','Оптимистичный',true),
+      mk(pes,'#f43f5e','Пессимистичный',true)
+    ],{h:310,unit:'млн $',fmtP:v=>fmtM(v)+' млн'});
+    $('lg-fc').innerHTML='<span><i style="background:#0f172a"></i>Факт</span><span><i style="background:#2563eb"></i>Базовый</span><span><i style="background:#10b981"></i>Оптимистичный</span><span><i style="background:#f43f5e"></i>Пессимистичный</span>';
+    const belo=[{name:'Belotero',color:'#2563eb',pts:hist.map(h=>({x:h.x,y:h.y*share})),dash:false},
+      ...[mk(base,'#0ea5e9','')].map(s=>({name:'прогноз',color:'#0ea5e9',pts:s.pts}))];
+    lineChart($('ch-fc-belo'),[
+      {name:'Факт (доля '+ (share*100).toFixed(1).replace('.',',') +'%)',color:'#0f172a',pts:hist.map(h=>({x:h.x,y:h.y*share}))},
+      {name:'Прогноз',color:'#0ea5e9',pts:[{x:'2026',y:rows[0].belo/1e6},...rows.slice(1).map(r=>({x:String(r.year),y:r.belo/1e6}))]}
+    ],{h:310,unit:'млн $',fmtP:v=>fmtM(v)+' млн'});
+    const tbl=[
+      {year:2025,total:y25,belo:y25*share,growth:(y25/annualMap[2024]-1),kind:'факт'},
+      ...rows
+    ];
+    makeTable('tbl-fc',{
+      csv:'прогноз_2029',
+      pageSize:10,
+      cols:[
+        {k:'year',label:'Год'},
+        {k:'kind',label:'Тип',fmt:v=>`<span class="tag ${v==='факт'?'ok':v==='оценка'?'est':'na'}">${esc(v)}</span>`},
+        {k:'total',label:'Импорт, млн $',num:true,fmt:v=>fmtM(v)},
+        {k:'belo',label:'Сегмент Belotero, млн $',num:true,fmt:v=>fmtM(v)},
+        {k:'growth',label:'Рост к пред. году',num:true,fmt:v=>v==null?'—':(v>=0?'▲ ':'▼ ')+pct(Math.abs(v))}
+      ],
+      rows:tbl
+    });
+  }
+  $('fc-sc').addEventListener('change',render);
+  $('fc-share').addEventListener('input',render);
+  render();
+})();
+
+/* ---- ПАСПОРТ ---- */
+(function(){
+  const src=[
+    {k:'Источник',v:'Что взято',p:'Период',d:'Выгрузка',n:'Оговорка'},
+    {k:'UN Comtrade (зеркало)',v:'Экспорт 19 стран → РФ, 330499, годовые + помесячные',p:'2019–2025 + 2026',d:DATA.meta.generated,n:'Зеркало; РФ не публикует данные'},
+    {k:'Таможня КНР (stats.customs.gov.cn)',v:'33049900/30067000/3304, экспорт+импорт, кг+шт',p:'2025-03…2026-09',d:DATA.meta.generated,n:'Единственный полный помесячный источник; капча обойдена'},
+    {k:'ФНС БФО (bo.nalog.gov.ru)',v:'Выручка/активы/прибыль 5 компаний',p:'2021–2025',d:DATA.meta.generated,n:'Вся выручка компании, не только филлеры'},
+    {k:'Госреестр МИ (Росздравнадзор)',v:'7 регистраций Belotero',p:'на дату выгрузки',d:DATA.meta.generated,n:'Поиск по названию; полнота подтверждена'},
+    {k:'ЕИС закупки',v:'7 закупок «Белотеро», поставщики контрактов',p:'2015–2025',d:DATA.meta.generated,n:'Небольшая выборка каналов'},
+    {k:'ПроДокторов',v:'552 розничных цены, 6 брендов',p:'окт. 2026',d:DATA.meta.generated,n:'Клиники Москвы; маркетплейсы закрыты антиботом'},
+    {k:'ЕМИСС / ФТС',v:'— данных по ТН ВЭД нет',p:'—',d:DATA.meta.generated,n:'ЕМИСС: только агрегат РФ; ФТС заморожена на 01.2022'}
+  ];
+  makeTable('tbl-src',{
+    csv:'паспорт_источники',
+    search:'Поиск…',
+    pageSize:10,
+    cols:[{k:'k',label:'Источник'},{k:'v',label:'Что взято'},{k:'p',label:'Период'},{k:'d',label:'Выгрузка'},{k:'n',label:'Оговорка',fmt:v=>`<span class="muted">${esc(v)}</span>`}],
+    rows:src
+  });
+  $('dp-caveats').innerHTML=DATA.meta.caveats.map(c=>'<li>'+esc(c)+'</li>').join('');
+  $('dp-files').innerHTML=[
+    'Comtrade_330499_зеркало_РФ.csv — сырые данные 223 запроса',
+    'Импорт_РФ_330499_свод_по_странам.csv — свод 222 строки',
+    'Китай_таможня_помесячно.csv + Китай_таможня_сводка.md — официальные помесячные КНР',
+    'Финансы_bo_nalog.md — БФО ФНС 5 компаний',
+    'Розница_процедуры_МСК.csv + Розница_сводка.md — 552 цены',
+    'Belotero_регистрации_Госреестр.csv — 7 регистраций',
+    'Китай_коды_стран.csv — справочник 272 стран',
+    'Этап0_тестовая_выгрузка_лог.md — полный журнал метода',
+    'cn_cdp.js / get_comtrade.ps1 — инструменты повторной выгрузки'
+  ].map(f=>'<li>'+esc(f)+'</li>').join('');
+  makeTable('tbl-fin',{
+    csv:'финансы_БФО',
+    search:'Поиск компании…',
+    pageSize:10,
+    cols:[
+      {k:'co',label:'Компания'},
+      {k:'role',label:'Роль',fmt:v=>`<span class="tag ${v.indexOf('Держатель')>=0?'brand':'na'}">${esc(v)}</span>`},
+      {k:'inn',label:'ИНН'},
+      {k:'y2021',label:'2021',num:true,fmt:v=>fmtInt(v)},
+      {k:'y2022',label:'2022',num:true,fmt:v=>fmtInt(v)},
+      {k:'y2023',label:'2023',num:true,fmt:v=>fmtInt(v)},
+      {k:'y2024',label:'2024',num:true,fmt:v=>fmtInt(v)},
+      {k:'y2025',label:'2025',num:true,fmt:v=>fmtInt(v)},
+      {k:'np2025',label:'Чист. приб. 2025',num:true,fmt:v=>v==null?'—':fmtInt(v)}
+    ],
+    rows:DATA.finance
+  });
+  $('foot').textContent=`Пилотный дашборд · ${DATA.meta.title} · данные на ${DATA.meta.generated} · все суммы — импорт в РФ (3304.99, верхняя граница категории) · модельные оценки помечены «оценка»`;
+})();
+
+/* ================= ДОПОЛНЕНИЯ v2 ================= */
+/* ================= ТЕМЫ / PDF ================= */
+(function(){
+  const btn=$('btn-theme');
+  function apply(th){
+    document.documentElement.dataset.theme=th;
+    btn.textContent= th==='dark'?'☀ Светлая тема':'🌙 Тёмная тема';
+    try{localStorage.setItem('dashTheme',th);}catch(e){}
+  }
+  let saved='light'; try{saved=localStorage.getItem('dashTheme')||'light';}catch(e){}
+  apply(saved);
+  btn.addEventListener('click',()=>apply(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+})();
+
+/* ================= XLSX-РАЙТЕР (без библиотек) ================= */
+const CRC_T=(function(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=~0;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&255]^(c>>>8);return (~c)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(); const chunks=[]; const central=[]; let offset=0;
+  const u16=v=>new Uint8Array([v&255,(v>>8)&255]);
+  const u32=v=>new Uint8Array([v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255]);
+  files.forEach(f=>{
+    const name=enc.encode(f.name), data=f.data, crc=crc32(data);
+    const local=new Uint8Array(30+name.length);
+    local.set([80,75,3,4],0); local.set(u16(20),4); local.set(u16(0),6); local.set(u16(0),8);
+    local.set(u16(0),10); local.set(u16(0),12); local.set(u32(crc),14);
+    local.set(u32(data.length),18); local.set(u32(data.length),22);
+    local.set(u16(name.length),26); local.set(u16(0),28); local.set(name,30);
+    chunks.push(local,data);
+    central.push({name,crc,size:data.length,off:offset});
+    offset+=local.length+data.length;
+  });
+  const cdStart=offset; let cdSize=0;
+  central.forEach(c=>{
+    const hdr=new Uint8Array(46+c.name.length);
+    hdr.set([80,75,1,2],0); hdr.set(u16(20),4); hdr.set(u16(20),6); hdr.set(u16(0),8);
+    hdr.set(u16(0),10); hdr.set(u16(0),12); hdr.set(u32(c.crc),16);
+    hdr.set(u32(c.size),20); hdr.set(u32(c.size),24); hdr.set(u16(c.name.length),28);
+    hdr.set(u16(0),30); hdr.set(u16(0),32); hdr.set(u16(0),34); hdr.set(u16(0),36);
+    hdr.set(u32(c.off),42); hdr.set(c.name,46);
+    chunks.push(hdr); cdSize+=hdr.length;
+  });
+  const eocd=new Uint8Array(22);
+  eocd.set([80,75,5,6],0); eocd.set(u16(0),4); eocd.set(u16(0),6);
+  eocd.set(u16(central.length),8); eocd.set(u16(central.length),10);
+  eocd.set(u32(cdSize),12); eocd.set(u32(cdStart),16); eocd.set(u16(0),20);
+  chunks.push(eocd);
+  let total=0; chunks.forEach(c=>total+=c.length);
+  const out=new Uint8Array(total); let p=0; chunks.forEach(c=>{out.set(c,p);p+=c.length;});
+  return out;
+}
+function colRef(i){let s='';i++;while(i>0){s=String.fromCharCode(65+(i-1)%26)+s;i=Math.floor((i-1)/26);}return s;}
+function sheetXml(rows){
+  let x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  rows.forEach((row,ri)=>{
+    x+='<row r="'+(ri+1)+'">';
+    row.forEach((cell,ci)=>{
+      const ref=colRef(ci)+(ri+1);
+      if(cell===null||cell===undefined||cell===''){ return; }
+      if(typeof cell==='number'&&isFinite(cell)){ x+='<c r="'+ref+'"><v>'+cell+'</v></c>'; }
+      else{ x+='<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+esc(String(cell))+'</t></is></c>'; }
+    });
+    x+='</row>';
+  });
+  return x+'</sheetData></worksheet>';
+}
+function buildXlsxZip(sheets){
+  const enc=new TextEncoder(); const files=[];
+  let ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
+  sheets.forEach((s,i)=>{ct+='<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';});
+  ct+='</Types>';
+  files.push({name:'[Content_Types].xml',data:enc.encode(ct)});
+  files.push({name:'_rels/.rels',data:enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')});
+  let wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+  let rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+  sheets.forEach((s,i)=>{
+    const nm=String(s.name||('Лист'+(i+1))).replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,31);
+    wb+='<sheet name="'+esc(nm)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';
+    rels+='<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';
+    files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:enc.encode(sheetXml(s.rows))});
+  });
+  wb+='</sheets></workbook>'; rels+='</Relationships>';
+  files.push({name:'xl/workbook.xml',data:enc.encode(wb)});
+  files.push({name:'xl/_rels/workbook.xml.rels',data:enc.encode(rels)});
+  return zipStore(files);
+}
+function saveXlsx(name, sheets){
+  try{
+    const buf=buildXlsxZip(sheets);
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=String(name).slice(0,60)+'.xlsx';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>{try{URL.revokeObjectURL(a.href);}catch(e){}},4000);
+  }catch(e){ console.error('xlsx export', e); }
+}
+
+/* ================= ЭКСПОРТ ПО БЛОКАМ ================= */
+function brandStatsAll(){
+  return ['Belotero','Juvederm','Restylane','Teosyal','Radiesse','Princess'].map(b=>{
+    const vs=DATA.prices.filter(p=>p.b===b).map(p=>p.v).sort((a,b)=>a-b);
+    return {b,n:vs.length,min:vs[0],p10:quantile(vs,.1),p25:quantile(vs,.25),p50:quantile(vs,.5),p75:quantile(vs,.75),p90:quantile(vs,.9),max:vs[vs.length-1]};
+  });
+}
+function fcParams(){
+  const y25=annualMap[2025];
+  const cagr=Math.pow(y25/annualMap[2019],1/6)-1;
+  const est26=(DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3;
+  const sc=$('fc-sc').value;
+  const g={base:cagr,opt:cagr+0.03,pes:Math.max(0,cagr-0.03)}[sc];
+  const share=(+$('fc-share').value||9.3)/100;
+  const years={}; let v=est26;
+  [2026,2027,2028,2029].forEach(y=>{ if(y>2026) v*=1+g; years[y]=v; });
+  return {cagr,est26,sc,g,share,years};
+}
+(function(){
+  window.__EXPORTS_ON=false;
+  const months=[...new Set(DATA.china.e33049900.map(r=>r.m))].sort();
+  const mCountries=['Китай','Германия','Польша','Израиль','Италия','Испания'];
+  const EXR=[
+    {m:'ov-kpi',f:'KPI_обзор',get:()=>{
+      const y25=annualMap[2025],y24=annualMap[2024];
+      const est26=(DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3;
+      const cnYtd=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.usd,0);
+      const cn25=DATA.china.e33049900.filter(r=>r.m.indexOf('2025-')===0).reduce((a,b)=>a+b.usd,0);
+      const belo=DATA.prices.filter(p=>p.b==='Belotero').map(p=>p.v).sort((a,b)=>a-b);
+      return [['Показатель','Значение','Динамика','Примечание'],
+        ['Импорт 3304.99 в РФ, 2025',fmtM(y25)+' млн $',pct((y25-y24)/y24)+' к 2024','19 стран, зеркало Comtrade'],
+        ['Импорт 2026, 9 мес факт',fmtM(DATA.ytd2026.knownUsd)+' млн $','','11 стран'],
+        ['Импорт 2026, полный год (оценка)',fmtM(est26)+' млн $','','модельная оценка'],
+        ['Китай → РФ 2026 9 мес',fmtM(cnYtd)+' млн $',pct(cnYtd*4/3/cn25-1)+' к 2025 (год)','таможня КНР'],
+        ['Мерц Фарма выручка 2025','11 036 023 тыс ₽','+17,2% к 2024','БФО ФНС'],
+        ['Розница Belotero медиана',fmtInt(quantile(belo,.5))+' ₽','','клиники Москвы'],
+        ['Регистраций Belotero',DATA.registrations.length,'','класс риска 3']];
+    }},
+    {m:'ch-annual',f:'импорт_годовые',get:()=>[['Год','USD','млн $','Тип'],...annual.map(a=>[a.year,a.usd,+(a.usd/1e6).toFixed(1),'факт']),['2026',Math.round((DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3),+(( (DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3)/1e6).toFixed(1),'оценка']]},
+    {m:'ch-top10',f:'топ10_стран_2025',get:()=>[['Страна','USD','млн $'],...top2025.slice(0,10).map(r=>[r.c,r.u,+(r.u/1e6).toFixed(1)])]},
+    {m:'ch-monthly26',f:'помесячно_2026',get:()=>{
+      const hdr=['Месяц',...mCountries.map(c=>c+', млн $')];
+      const rows=months.filter(m=>m.indexOf('2026-')===0).map(m=>[m,...mCountries.map(c=>{
+        const r=imp.find(r=>r.c===c&&r.t==='месяц'&&r.p===m);
+        return r?+(r.u/1e6).toFixed(2):'';
+      })]);
+      return [hdr,...rows];
+    }},
+    {m:'im-kpi',f:'KPI_импорт',get:()=>{
+      const y25=annualMap[2025];
+      const kg25=imp.filter(r=>r.t==='год'&&r.p==='2025').reduce((a,b)=>a+(b.k||0),0);
+      const cnKg=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.kg,0);
+      return [['Показатель','Значение','Примечание'],
+        ['2025 год',fmtM(y25)+' млн $','17 стран с данными'],
+        ['2026 9 мес факт',fmtM(DATA.ytd2026.knownUsd)+' млн $',''],
+        ['2026 полный год (оценка)',fmtM(((DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3))+' млн $','модельная оценка'],
+        ['Тоннаж 2025',fmtKg(kg25),''],
+        ['Китай тоннаж 2026 9 мес',fmtKg(cnKg),'']];
+    }},
+    {m:'ch-cmp',f:'страны_2025_vs_2026',get:()=>[['Страна','2025 млн $','2026 9 мес млн $'],...top2025.slice(0,12).map(r=>[r.c,+(r.u/1e6).toFixed(1),+(countryYtd(r.c)/1e6).toFixed(1)])]},
+    {m:'ch-cn-usd',f:'китай_USD_и_кг',get:()=>[['Месяц','USD','Кг'],...DATA.china.e33049900.map(r=>[r.m,r.usd,r.kg])]},
+    {m:'ch-cn-kg',f:'китай_тонны',get:()=>[['Месяц','Тонн'],...DATA.china.e33049900.map(r=>[r.m,+(r.kg/1000).toFixed(1)])]},
+    {m:'ch-share25',f:'доли_2025',get:()=>{
+      const tot=top2025.reduce((a,b)=>a+b.u,0);
+      return [['Страна','USD','Доля %'],...top2025.map(r=>[r.c,r.u,+(r.u/tot*100).toFixed(1)])];
+    }},
+    {m:'ch-sharetrend',f:'доли_по_годам',get:()=>{
+      const years=[2019,2020,2021,2022,2023,2024,2025];
+      const t5=top2025.slice(0,5).map(r=>r.c);
+      const hdr=['Год',...t5];
+      return [hdr,...years.map(y=>{const tot=sumYear(y)||1;return [y,...t5.map(c=>+(countryYear(c,y)/tot*100).toFixed(1))];})];
+    }},
+    {m:'ch-cn-struct',f:'китай_коды_помесячно',get:()=>[['Месяц','3304 млн $','33049900 млн $','30067000 млн $'],...months.map(m=>[
+      m,
+      +( (DATA.china.e3304.find(x=>x.m===m)||{}).usd/1e6 || 0).toFixed(2),
+      +( (DATA.china.e33049900.find(x=>x.m===m)||{}).usd/1e6 || 0).toFixed(2),
+      +( (DATA.china.e30067000.find(x=>x.m===m)||{}).usd/1e6 || 0).toFixed(2)])]},
+    {m:'ch-belo-models',f:'модели_Belotero_цены',get:()=>{
+      const modelRe=/(Lips Contour|Lips Shape|Липс Контур|Липс Шейп|Soft|Софт|Balance|Баланс|Hydro|Гидро|Intense|Интенс|Revive|Ревайв|Volume|Волюм)/i;
+      const map={};
+      DATA.prices.filter(p=>p.b==='Belotero').forEach(p=>{
+        const k2=/lips contour|липс контур/i.test(p.p)?'Lips Contour':/lips shape|липс шейп/i.test(p.p)?'Lips Shape':
+          /soft|софт/i.test(p.p)?'Soft':/balance|баланс/i.test(p.p)?'Balance':/hydro|гидро/i.test(p.p)?'Hydro':
+          /intense|интенс/i.test(p.p)?'Intense':/revive|ревайв/i.test(p.p)?'Revive':/volume|волюм/i.test(p.p)?'Volume':'прочее';
+        (map[k2]=map[k2]||[]).push(p.v);
+      });
+      return [['Модель','N цен','Медиана ₽','P25 ₽','P75 ₽'],...Object.entries(map).map(([k,vs])=>{
+        vs.sort((a,b)=>a-b);
+        return [k,vs.length,quantile(vs,.5),quantile(vs,.25),quantile(vs,.75)];
+      })];
+    }},
+    {m:'ch-range',f:'ценовые_коридоры',get:()=>[['Бренд','N','Мин','P10','P25','Медиана','P75','P90','Макс'],
+      ...brandStatsAll().map(s=>[s.b,s.n,s.min,s.p10,s.p25,s.p50,s.p75,s.p90,s.max])]},
+    {m:'ch-med',f:'медианы_брендов',get:()=>[['Бренд','Медиана ₽'],...brandStatsAll().map(s=>[s.b,s.p50])]},
+    {m:'ch-fc',f:'прогноз_сценарии',get:()=>{
+      const p=fcParams();
+      const mk=g=>{let v=p.est26;const o={};[2026,2027,2028,2029].forEach(y=>{if(y>2026)v*=1+g;o[y]=v;});return o;};
+      const b=mk(p.cagr),o=mk(p.cagr+0.03),e=mk(Math.max(0,p.cagr-0.03));
+      return [['Год','База млн $','Оптимист млн $','Пессимист млн $','Belotero (доля) млн $'],
+        ...[2026,2027,2028,2029].map(y=>[y,+ (b[y]/1e6).toFixed(1),+(o[y]/1e6).toFixed(1),+(e[y]/1e6).toFixed(1),+((b[y]*p.share)/1e6).toFixed(1)])];
+    }},
+    {m:'ch-fc-belo',f:'прогноз_Belotero',get:()=>{
+      const p=fcParams();
+      return [['Год','Сегмент Belotero млн $'],...[2026,2027,2028,2029].map(y=>[y,+((p.years[y]*p.share)/1e6).toFixed(1)])];
+    }},
+    {m:'vd-market',f:'выводы_рынок',get:()=>[['№','Вывод'],...[...document.querySelectorAll('#vd-market li')].map((li,i)=>[i+1,li.textContent])]},
+    {m:'vd-forecast',f:'выводы_прогноз',get:()=>[['№','Вывод'],...[...document.querySelectorAll('#vd-forecast li')].map((li,i)=>[i+1,li.textContent])]},
+    {m:'ch-vd-sens',f:'чувствительность_доли',get:()=>{
+      const p=fcParams();
+      return [['Доля Belotero %','Сегмент 2029 млн $'],...[5,7,8,9.3,11,13,15].map(d=>[d,+((p.years[2029]*d/100)/1e6).toFixed(1)])];
+    }},
+    {m:'dp-caveats',f:'паспорт_полностью',get:()=>[
+      {name:'Ограничения',rows:[['№','Ограничение'],...DATA.meta.caveats.map((c,i)=>[i+1,c])]},
+      {name:'Финансы БФО',rows:[['Компания','Роль','ИНН','2021','2022','2023','2024','2025'],...DATA.finance.map(f=>[f.co,f.role,f.inn,f.y2021,f.y2022,f.y2023,f.y2024,f.y2025])]}
+    ]}
+  ];
+  if(!window.__EXPORTS_ON) return;
+  EXR.forEach(x=>{
+    const el=$(x.m); if(!el) return;
+    const card=el.closest('.card')||el;
+    const b=document.createElement('button');
+    b.className='xbtn'; b.textContent='⬇ Excel'; b.title='Выгрузить данные блока в Excel (.xlsx)';
+    b.addEventListener('click',()=>{
+      try{
+        const res=x.get();
+        const sheets=Array.isArray(res[0])?[{name:x.f,rows:res}]:res;
+        saveXlsx(x.f,sheets);
+      }catch(e){console.error(e);}
+    });
+    card.appendChild(b);
+  });
+})();
+
+/* ================= ВЫВОДЫ ================= */
+(function(){
+  function render(){
+    const bs=brandStatsAll();
+    const med=b=>bs.find(s=>s.b===b).med;
+    const y25=annualMap[2025],y19=annualMap[2019],y22=annualMap[2022],y21=annualMap[2021];
+    const cagr=Math.pow(y25/y19,1/6)-1;
+    const y23=annualMap[2023];
+    const g22to25=Math.pow(y25/y22,1/3)-1;      /* темп восстановления 2022→2025 */
+    const cagr2=g22to25;
+    const gPeak=Math.pow(y25/y21,1/4)-1;        /* окно от пика 2021 */
+    const gRecent=Math.pow(y25/y23,1/2)-1;      /* окно 2023→2025 */
+    const est26=(DATA.ytd2026.knownUsd+DATA.ytd2026.missingEstUsd)*4/3;
+    const p=fcParams();
+    const fcs=p.years;
+    const cnYtd=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.usd,0);
+    const cn25=DATA.china.e33049900.filter(r=>r.m.indexOf('2025-')===0).reduce((a,b)=>a+b.usd,0);
+    const cnG=cnYtd*4/3/cn25-1;
+    const tot25=top2025.reduce((a,b)=>a+b.u,0);
+    const share25=c=>{const r=top2025.find(x=>x.c===c);return r?r.u/tot25*100:0;};
+    const de26=countryYtd('Германия')*4/3, pl26=countryYtd('Польша')*4/3;
+    const de25=countryYear('Германия',2025), pl25=countryYear('Польша',2025);
+    const cnKg=DATA.china.e33049900.filter(r=>r.m.indexOf('2026-')===0).reduce((a,b)=>a+b.kg,0);
+    const cnPrice=cnKg? cnYtd/cnKg : 0;
+    const kr=countryYtd; void kr;
+    const scName={base:'базовый',opt:'оптимистичный',pes:'пессимистичный'}[p.sc];
+    $('vd-sc').textContent=scName;
+    $('vd-share').textContent=(p.share*100).toFixed(1).replace('.',',')+'%';
+    const mkt=[
+      `Категория растёт устойчиво: импорт 3304.99 в РФ — <b>${fmtM(y19)} млн $ (2019) → ${fmtM(y25)} млн $ (2025)</b>, CAGR ${pct(cagr)}; провал 2022 (${fmtM(y22)} млн $, −${pct((y21-y22)/y21)}) полностью отыгран к 2024.`,
+      `География поставок смещается в Азию: Республика Корея — ${pct(share25('Республика Корея'))} категории, Франция — ${pct(share25('Франция'))}, Китай — ${pct(share25('Китай'))}; при этом Германия (${pct(de26/de25-1)} к 2025 в годовом выражении) и Польша (${pct(pl26/pl25-1)}) сокращают поставки.`,
+      `Китай — главный драйвер объёма: <b>${fmtM(cnYtd)} млн $ за 9 мес. 2026 (${pct(cnG)} к 2025 в годовом выражении)</b> при средней цене ${cnPrice.toFixed(1).replace('.',',')} $/кг — ценовой прессинг на нижний сегмент.`,
+      `Belotero позиционирован в среднем ценовом сегменте: медиана процедуры <b>${fmtInt(med('Belotero'))} ₽</b> — на ${pct(1-med('Belotero')/med('Juvederm'))} дешевле Juvederm (${fmtInt(med('Juvederm'))} ₽), на ${pct(1-med('Belotero')/med('Teosyal'))} дешевле Teosyal (${fmtInt(med('Teosyal'))} ₽) и на ${pct(med('Belotero')/med('Princess')-1)} дороже Princess (${fmtInt(med('Princess'))} ₽).`,
+      `Продуктовый портфель полный и управляемый: <b>${DATA.registrations.length} действующих регистраций</b> (все линейки: ${[...new Set(DATA.registrations.map(r=>r.model))].join(', ')}), единый держатель РУ — ООО «Мерц Фарма», производитель Anteis SA (Швейцария), класс риска 3, маркировка Честный знак (ЕРУЛ).`,
+      `Канал сбыта консолидируется: выручка классических дистрибьюторов падает (АСТЭРА: 171→101 млн ₽ за 2021–2025, Экспресс-Бьюти −${pct(1-60621/65566)}), прямой канал держателя РУ усиливается — выручка «Мерц Фарма» <b>11,04 млрд ₽ (+17,2% в 2025)</b>, чистая прибыль восстановлена (+305 млн ₽ после убытка 2024).`,
+      `Производство Belotero — Швейцария, но Швейцария даёт лишь ${pct(share25('Швейцария'))} категории 3304.99: бренд — миноритарный игрок категории (экспертная доля ${String(DATA.meta.beloteroShare).replace('.',',')}%), категория при этом держится корейскими и французскими портфелями.`,
+      `Риски: 100% импортная зависимость (логистика/курс), ценовой прессинг снизу (Princess, китайские поставщики), регуляторика маркировки; ограничения данных — по 8 странам нет помесячной статистики 2026, категория 3304.99 — верхняя граница (вся косметика).`
+    ];
+    $('vd-market').innerHTML=mkt.map(x=>'<li>'+x+'</li>').join('');
+    const fc=[
+      `Траектория рынка: базовый темп привязан к окну <b>2019–2025</b> (CAGR ${pct(cagr)} в год по полному циклу «рост 2019–2021 → шок 2022 → восстановление»); после провала 2022 восстановление шло темпом ~${pct(cagr2)} в год; оценка 2026 — <b>${fmtM(est26)} млн $</b> (факт 9 мес. ${fmtM(DATA.ytd2026.knownUsd)} млн $ + оценка по странам без помесячных ${fmtM(DATA.ytd2026.missingEstUsd)} млн $), это ${pct(est26/y25-1)} к 2025 — стагнация года на фоне спада Германии и Польши.`,
+      `Сценарный коридор — производная от якоря 2019: база = CAGR 2019–2025 (${pct(cagr)}/год), оптимист/пессимист = ±3 п.п. к нему; для сравнения наблюдаемые альтернативные окна дают ${pct(gPeak)} от пика 2021 и ${pct(gRecent)} от 2023 (восстановительный темп от 2022 — ${pct(g22to25)} — завышает и не используется). Сценарий «${scName}» (${pct(p.g)} в год): импорт к 2029 — <b>${fmtM(fcs[2029])} млн $</b>; диапазон 2029 от ${fmtM((function(){const g=Math.max(0,cagr-0.03);let v=est26;for(let y=2027;y<=2029;y++)v*=1+g;return v;})())} млн $ (пессимистичный) до ${fmtM((function(){const g=cagr+0.03;let v=est26;for(let y=2027;y<=2029;y++)v*=1+g;return v;})())} млн $ (оптимистичный).`,
+      `Сегмент Belotero при доле ${(p.share*100).toFixed(1).replace('.',',')}%: <b>2026 ≈ ${fmtM(est26*p.share)} млн $ → 2029 ≈ ${fmtM(fcs[2029]*p.share)} млн $</b> (при медиане ${fmtInt(med('Belotero'))} ₽ за процедуру это ≈ ${fmtInt(fcs[2029]*p.share/med('Belotero'))} процедур в год).`,
+      `Чувствительность: каждый ±1 п.п. доли Belotero меняет сегмент 2029 на ≈ <b>±${fmtM(fcs[2029]*0.01)} млн $</b>; каждый ±1 п.п. темпа роста рынка — ≈ ±${fmtM(Math.abs(fcs[2029]-fcs[2028])*0.33)} млн $.`,
+      `Структура роста смещается: Китай (+${pct(cnG)} к 2025 год.) компенсирует спад Германии (${pct(de26/de25-1)}) и Польши (${pct(pl26/pl25-1)}); Франция и Корея — «слепая зона» помесячного мониторинга (нет данных) — при их публикации прогноз уточнится в первую очередь.`,
+      `Индикаторы для ежеквартального обновления модели: (1) помесячные Comtrade за сентябрь–октябрь 2026; (2) помесячная таможня КНР (уже автоматизирована); (3) цены клиник по 6 брендам; (4) квартальная выручка «Мерц Фарма» (БФО); (5) закупки ЕИС по «Белотеро».`,
+      `Вывод для планирования: при базовом сценарии рынок 2029 ≈ ${fmtM(fcs[2029])} млн $, целевой коридор сегмента Belotero — ${fmtM(fcs[2029]*(p.share-0.01))}–${fmtM(fcs[2029]*(p.share+0.01))} млн $; точка безубыточности промо-бюджета — удержание доли ≥ ${Math.max(5,p.share*100-2).toFixed(0)}%.`
+    ];
+    $('vd-forecast').innerHTML=fc.map(x=>'<li>'+x+'</li>').join('');
+    const sens=[5,7,8,9.3,11,13,15].map(d=>({l:d+'%',v:fcs[2029]*d/100/1e6}));
+    barH($('ch-vd-sens'),sens,{fmt:v=>v.toFixed(0),rowH:30,l:70});
+    // превью: первое предложение видно, остальное размыто
+    ['vd-market','vd-forecast'].forEach(id=>{
+      const ul=$(id); if(!ul) return;
+      [...ul.children].forEach((li,i)=>{ li.classList.toggle('blurlock', i>0); li.classList.toggle('nb-skip', i===0); });
+    });
+    const sx=$('ch-vd-sens');
+    if(sx){ sx.style.display='none'; if(sx.previousElementSibling) sx.previousElementSibling.style.display='none'; }
+  }
+  render();
+  $('fc-sc').addEventListener('change',render);
+  $('fc-share').addEventListener('input',render);
+})();
+
+/* ================= ЗАЩИТА ОТ КОПИРОВАНИЯ ================= */
+(function(){
+  document.addEventListener('contextmenu',e=>{ e.preventDefault(); });
+  document.addEventListener('copy',e=>{
+    e.preventDefault();
+    try{ e.clipboardData.setData('text/plain','© Дашборд рынка филлеров (Belotero). Копирование данных запрещено.'); }catch(err){}
+  });
+  document.addEventListener('cut',e=>{ e.preventDefault(); });
+  document.addEventListener('dragstart',e=>{ e.preventDefault(); });
+  document.addEventListener('keydown',e=>{
+    const t=e.target; const tag=t&&t.tagName?t.tagName.toUpperCase():'';
+    const inField=(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA');
+    const k=(e.key||'').toLowerCase();
+    if((e.ctrlKey||e.metaKey)&&['c','x','a','s','u','p'].indexOf(k)>=0&&!inField){ e.preventDefault(); }
+  });
+})();
+/* ================= ДЕМО-РЕЖИМ: ЦИФРЫ ПОД БЛЮРОМ ================= */
+const DEMO=true; /* false = показать реальные цифры */
+(function(){
+  if(!DEMO){ return; }
+  document.body.classList.add('demo');
+  const skipTags=new Set(['INPUT','SELECT','TEXTAREA','OPTION','SCRIPT','STYLE','BUTTON','TITLE']);
+  function walk(root){
+    if(!root) return;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      const p=n.parentElement; if(!p) return NodeFilter.FILTER_REJECT;
+      if(skipTags.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+      if(p.closest && (p.closest('.nb')||p.closest('.nb-skip'))) return NodeFilter.FILTER_REJECT;
+      if(p.closest && p.closest('svg')) return NodeFilter.FILTER_REJECT;
+      if(p.closest && p.closest('.card > div:first-child, thead')) return NodeFilter.FILTER_REJECT;
+      if(!/\d/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    const nodes=[]; let n;
+    while((n=w.nextNode())) nodes.push(n);
+    nodes.forEach(node=>{
+      const txt=node.nodeValue; if(!txt) return;
+      const frag=document.createDocumentFragment();
+      const re=/\d+(?:[\s\u00A0.,·-]\d+)*/g;
+      let last=0,m;
+      while((m=re.exec(txt))!==null){
+        if(m.index>last) frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+        const s=document.createElement('span'); s.className='nb'; s.textContent=m[0];
+        frag.appendChild(s); last=m.index+m[0].length;
+      }
+      if(last<txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+      if(node.parentNode) node.parentNode.replaceChild(frag,node);
+    });
+  }
+  window.__blurNumbers=walk;
+  walk(document.querySelector('main'));
+  let timer=null;
+  const mo=new MutationObserver(muts=>{
+    if(timer) clearTimeout(timer);
+    timer=setTimeout(()=>{
+      const main=document.querySelector('main'); if(!main) return;
+      walk(main);
+    },150);
+  });
+  mo.observe(document.querySelector('main'),{childList:true,subtree:true});
+})();</script>
+</body>
+</html>
